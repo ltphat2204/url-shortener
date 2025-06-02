@@ -1,11 +1,11 @@
 <template>
-  <SignInForm />
+  <SignIn />
 </template>
 
 <script>
-import SignInForm from '../components/SignIn.vue';
+import SignIn from '../components/SignIn.vue';
 export default {
   name: 'SignInView',
-  components: { SignInForm }
+  components: { SignIn }
 }
 </script>

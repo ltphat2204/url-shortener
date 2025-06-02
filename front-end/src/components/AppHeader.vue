@@ -3,7 +3,7 @@
     <div class="header-actions-wrapper">
       <div class="header-actions">
         <template v-if="user">
-          <span class="user-greeting">Xin chào, {{ user.name || user.username || user.email }}</span>
+          <span class="user-greeting">Xin chào, {{ displayName }}</span>
           <SignOut />
         </template>
         <template v-else>
@@ -17,12 +17,22 @@
 
 <script setup>
 import SignOut from './SignOut.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const user = ref(null)
 user.value = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
+
+const displayName = computed(() => {
+  if (!user.value) return ''
+  if (user.value.name) return user.value.name
+  if (user.value.given_name && user.value.family_name)
+    return user.value.given_name + ' ' + user.value.family_name
+  if (user.value.given_name) return user.value.given_name
+  if (user.value.username) return user.value.username
+  return user.value.email || ''
+})
 
 function goToSignIn() {
   router.push('/signIn')
@@ -57,6 +67,7 @@ function goToSignUp() {
 }
 
 .user-greeting {
+  font-family: 'Noto Sans', 'Tahoma', 'Arial', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   font-weight: 500;
   font-size: 16px;
   color: white;
