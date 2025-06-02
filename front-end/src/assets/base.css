@@ -84,3 +84,13 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
+
+input::placeholder {
+	color: black !important;
+	opacity: 1;
+}
+
+input,
+textarea {
+	color: black;
+}

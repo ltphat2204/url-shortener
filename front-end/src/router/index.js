@@ -8,6 +8,7 @@ const router = createRouter({
 			path: '/',
 			name: 'home',
 			component: HomeView,
+			meta: { requiresAuth: true },
 		},
 		{
 			path: '/about',
@@ -17,7 +18,31 @@ const router = createRouter({
 			// which is lazy-loaded when the route is visited.
 			component: () => import('../views/AboutView.vue'),
 		},
+		{
+			path: '/signIn',
+			name: 'signIn',
+			component: () => import('../views/SignInView.vue'),
+		},
+		{
+			path: '/signUp',
+			name: 'signUp',
+			component: () => import('../views/SignUpView.vue'),
+		},
 	],
+})
+
+// Navigation guard for authentication
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  if (requiresAuth && !token) {
+    next('/signIn')
+  } else if ((to.path === '/signIn' || to.path === '/signUp') && token) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router
