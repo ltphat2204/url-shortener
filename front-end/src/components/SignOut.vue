@@ -10,9 +10,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <button @click="handleLogout" class="signout-btn">
-    <span class="icon">🚪</span> Đăng xuất
-  </button>
+  <button @click="handleLogout" class="signout-btn">Đăng xuất</button>
 </template>
 
 <style scoped>

@@ -236,6 +236,7 @@ export default {
   font-size: 16px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  color: black;
 }
 
 .form-group input:focus {
@@ -322,7 +323,8 @@ export default {
 .btn-google {
   width: 100%;
   background: white;
-  border: 2px solid #e1e5e9;
+  color: #667eea;
+  border: 2px solid #667eea;
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
@@ -337,7 +339,8 @@ export default {
 }
 
 .btn-google:hover {
-  border-color: #ccc;
+  border-color: #91a2eb;
+  color: #91a2eb;
 }
 
 .auth-footer {
@@ -355,14 +358,7 @@ export default {
   font-weight: 500;
 }
 
-.auth-footer a:hover {
-  text-decoration: underline;
-}
-
-.forgot-link {
-  color: #666;
-  font-size: 14px;
-}
+/* Removed hover effect for auth-footer link */
 
 @media (max-width: 480px) {
   .auth-card {

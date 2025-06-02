@@ -1,14 +1,16 @@
 <template>
   <header class="app-header">
-    <div class="header-actions">
-      <template v-if="user">
-        <span class="user-greeting">Xin chào, {{ user.name || user.username || user.email }}</span>
-        <SignOut />
-      </template>
-      <template v-else>
-        <button @click="goToSignIn" class="btn-auth">Đăng nhập</button>
-        <button @click="goToSignUp" class="btn-auth">Đăng ký</button>
-      </template>
+    <div class="header-actions-wrapper">
+      <div class="header-actions">
+        <template v-if="user">
+          <span class="user-greeting">Xin chào, {{ user.name || user.username || user.email }}</span>
+          <SignOut />
+        </template>
+        <template v-else>
+          <button @click="goToSignIn" class="btn-auth">Đăng nhập</button>
+          <button @click="goToSignUp" class="btn-auth btn-signup">Đăng ký</button>
+        </template>
+      </div>
     </div>
   </header>
 </template>
@@ -36,32 +38,109 @@ function goToSignUp() {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 24px 32px 0 32px;
+  padding: 20px 32px;
   box-sizing: border-box;
+  min-height: 80px;
 }
+
+.header-actions-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
+
 .user-greeting {
   font-weight: 500;
-  margin-right: 8px;
+  font-size: 16px;
+  color: white;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  border: none;
 }
+
 .btn-auth {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 10px 22px;
+  border-radius: 12px;
+  padding: 12px 24px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-  margin-left: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  min-width: 120px;
+  text-align: center;
 }
+
 .btn-auth:hover {
   background: linear-gradient(135deg, #5a67d8 0%, #6b47b6 100%);
   transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-auth:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn-signup {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-signup:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 16px 20px;
+    min-height: 70px;
+  }
+
+  .header-actions {
+    gap: 12px;
+  }
+
+  .btn-auth {
+    padding: 10px 20px;
+    font-size: 14px;
+    min-width: 100px;
+  }
+
+  .user-greeting {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .btn-auth {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .user-greeting {
+    text-align: center;
+    margin-bottom: 8px;
+  }
 }
 </style>

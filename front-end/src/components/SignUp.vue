@@ -79,20 +79,6 @@
             <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
           </div>
 
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                v-model="form.agreeTerms"
-                :class="{ 'error': errors.agreeTerms }"
-              />
-              <span class="checkmark"></span>
-              Tôi đồng ý với <a href="#" @click.prevent>Điều khoản sử dụng</a> và
-              <a href="#" @click.prevent>Chính sách bảo mật</a>
-            </label>
-            <span v-if="errors.agreeTerms" class="error-message">{{ errors.agreeTerms }}</span>
-          </div>
-
           <div class="form-actions">
             <button
               type="submit"
@@ -202,7 +188,6 @@ export default {
         email: '',
         password: '',
         confirmPassword: '',
-        agreeTerms: false
       },
       errors: {},
       loading: false,
@@ -370,12 +355,6 @@ export default {
         isValid = false;
       }
 
-      // Terms agreement validation
-      if (!this.form.agreeTerms) {
-        this.errors.agreeTerms = 'Bạn phải đồng ý với điều khoản sử dụng';
-        isValid = false;
-      }
-
       return isValid;
     },
 
@@ -502,6 +481,7 @@ export default {
   font-size: 16px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  color: black;
 }
 
 .form-group input:focus {
@@ -526,69 +506,6 @@ export default {
   border: none;
   cursor: pointer;
   padding: 4px;
-}
-
-.checkbox-group {
-  margin-top: 20px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.checkbox-label input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  width: 0;
-  height: 0;
-}
-
-.checkmark {
-  height: 20px;
-  width: 20px;
-  background-color: #eee;
-  border-radius: 4px;
-  margin-right: 12px;
-  flex-shrink: 0;
-  position: relative;
-  border: 2px solid #e1e5e9;
-  transition: all 0.3s ease;
-}
-
-.checkbox-label input:checked ~ .checkmark {
-  background-color: #667eea;
-  border-color: #667eea;
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.checkbox-label input:checked ~ .checkmark:after {
-  display: block;
-}
-
-.checkbox-label a {
-  color: #667eea;
-  text-decoration: none;
-}
-
-.checkbox-label a:hover {
-  text-decoration: underline;
 }
 
 .error-message {
@@ -650,7 +567,8 @@ export default {
 .btn-google {
   width: 100%;
   background: white;
-  border: 2px solid #e1e5e9;
+  color: #667eea;
+  border: 2px solid #667eea;
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
@@ -665,8 +583,10 @@ export default {
 }
 
 .btn-google:hover {
-  border-color: #ccc;
+  border-color: #91a2eb;
+  color: #91a2eb;
 }
+
 
 /* OTP Verification Styles */
 .otp-verification {
