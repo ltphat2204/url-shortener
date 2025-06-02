@@ -1,5 +1,6 @@
 <template>
-  <div id="google-signup-btn" style="width:100%;display:flex;justify-content:center;"></div>
+  <div id="google-signup-btn" 
+   style="width:100%;display:flex;justify-content:center;"></div>
 </template>
 
 <script>
@@ -42,3 +43,27 @@ export default {
   }
 }
 </script>
+<style scoped>
+.btn-google {
+  width: 100%;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: border-color 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.btn-google:hover {
+  border-color: #91a2eb;
+  color: #91a2eb;
+}
+</style>

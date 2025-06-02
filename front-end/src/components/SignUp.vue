@@ -150,11 +150,11 @@
         <div class="success-icon">✅</div>
         <h3>Đăng ký thành công!</h3>
         <p>Tài khoản của bạn đã được tạo thành công. Bạn có thể bắt đầu sử dụng dịch vụ ngay bây giờ.</p>
-        <button @click="goToSignIn" class="btn-primary">Đăng nhập ngay</button>
+        <router-link to="/signIn" class="btn-primary" style="display:inline-block;text-align:center;">Đăng nhập ngay</router-link>
       </div>
 
       <div v-if="currentStep === 1" class="auth-footer">
-        <p>Đã có tài khoản? <a href="#" @click.prevent="goToSignIn()">Đăng nhập ngay</a></p>
+        <p>Đã có tài khoản? <router-link to="/signIn" class="btn-link">Đăng nhập ngay</router-link></p>
       </div>
     </div>
   </div>
@@ -576,6 +576,7 @@ export default {
   font-size: 20px;
   font-weight: 600;
   transition: border-color 0.3s ease;
+  color: black;
 }
 
 .otp-input:focus {
@@ -605,15 +606,11 @@ export default {
   cursor: pointer;
   font-size: 14px;
   margin: 0 8px;
+  font-weight: 500;
+  padding: 0;
 }
-
 .btn-link:hover {
   text-decoration: underline;
-}
-
-.btn-link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Success Message Styles */

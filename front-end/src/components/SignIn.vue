@@ -60,7 +60,7 @@
       <GoogleAuthButton @success="onGoogleSignIn" />
 
       <div class="auth-footer">
-        <p>Chưa có tài khoản? <a href="/signIn" @click.prevent="goToSignUp">Đăng ký ngay</a></p>
+        <p>Chưa có tài khoản? <router-link to="/signUp" class="btn-link">Đăng ký ngay</router-link></p>
       </div>
     </div>
   </div>
@@ -126,18 +126,15 @@ export default {
     },
 
     onGoogleSignIn(credential) {
-      // Decode JWT để lấy thông tin user (hỗ trợ Unicode)
+      // Decode JWT để lấy thông tin user
       let payload = {};
       try {
-        const base64 = credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        payload = JSON.parse(jsonPayload);
+        payload = JSON.parse(atob(credential.split('.')[1]));
       } catch { /* ignore decode error */ }
       // Lưu user vào localStorage/mockUsers nếu chưa có
       const existed = mockUsers.find(u => u.email === payload.email);
       if (!existed) {
+        // Nếu chưa có thì thêm vào mockUsers
         mockUsers.push({
           username: payload.email?.split('@')[0] || '',
           email: payload.email,
@@ -369,7 +366,20 @@ export default {
   font-weight: 500;
 }
 
-/* Removed hover effect for auth-footer link */
+.btn-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 8px;
+  font-weight: 500;
+  padding: 0;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 480px) {
   .auth-card {
