@@ -1,163 +1,165 @@
 <template>
-  <div class="auth-container">
-    <div class="auth-card">
-      <div class="auth-header">
-        <h2>Đăng ký</h2>
-        <p>Tạo tài khoản mới để bắt đầu!</p>
-      </div>
-
-      <!-- Step 1: Registration Form -->
-      <div v-if="currentStep === 1">
-        <form @submit.prevent="handleSignUp" class="auth-form">
-          <div class="form-group">
-            <label for="fullName">Họ và tên</label>
-            <input
-              type="text"
-              id="fullName"
-              v-model="form.fullName"
-              :class="{ 'error': errors.fullName }"
-              placeholder="Nhập họ và tên"
-              required
-            />
-            <span v-if="errors.fullName" class="error-message">{{ errors.fullName }}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              v-model="form.email"
-              :class="{ 'error': errors.email }"
-              placeholder="Nhập email của bạn"
-              required
-            />
-            <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="password">Mật khẩu</label>
-            <div class="password-input">
-              <input
-                :type="showPassword ? 'text' : 'password'"
-                id="password"
-                v-model="form.password"
-                :class="{ 'error': errors.password }"
-                placeholder="Nhập mật khẩu"
-                required
-              />
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="password-toggle"
-              >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-              </button>
-            </div>
-            <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Xác nhận mật khẩu</label>
-            <div class="password-input">
-              <input
-                :type="showConfirmPassword ? 'text' : 'password'"
-                id="confirmPassword"
-                v-model="form.confirmPassword"
-                :class="{ 'error': errors.confirmPassword }"
-                placeholder="Nhập lại mật khẩu"
-                required
-              />
-              <button
-                type="button"
-                @click="showConfirmPassword = !showConfirmPassword"
-                class="password-toggle"
-              >
-                {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
-              </button>
-            </div>
-            <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
-          </div>
-
-          <div class="form-actions">
-            <button
-              type="submit"
-              :disabled="loading"
-              class="btn-primary"
-            >
-              {{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Step 2: OTP Verification -->
-      <div v-else-if="currentStep === 2" class="otp-verification">
-        <div class="otp-header">
-          <div class="otp-icon">📧</div>
-          <h3>Xác thực email</h3>
-          <p>Chúng tôi đã gửi mã OTP đến email <strong>{{ form.email }}</strong></p>
+  <main class="signup-main">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h2>Đăng ký</h2>
+          <p>Tạo tài khoản mới để bắt đầu!</p>
         </div>
 
-        <form @submit.prevent="verifyOTP" class="otp-form">
-          <div class="otp-inputs">
-            <input
-              v-for="(digit, index) in otpDigits"
-              :key="index"
-              :ref="el => otpRefs[index] = el"
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              maxlength="1"
-              v-model="otpDigits[index]"
-              @input="handleOTPInput($event, index)"
-              @keydown="handleOTPKeydown($event, index)"
-              class="otp-input"
-              autocomplete="one-time-code"
-            />
-          </div>
-          <span v-if="errors.otp" class="error-message">{{ errors.otp }}</span>
-          <div class="otp-actions">
-            <button
-              type="submit"
-              :disabled="loading || !isOTPComplete"
-              class="btn-primary"
-              style="display:none;"
-            >
-              Xác thực
-            </button>
-          </div>
-        </form>
+        <!-- Step 1: Registration Form -->
+        <div v-if="currentStep === 1">
+          <form @submit.prevent="handleSignUp" class="auth-form">
+            <div class="form-group">
+              <label for="fullName">Họ và tên</label>
+              <input
+                type="text"
+                id="fullName"
+                v-model="form.fullName"
+                :class="{ 'error': errors.fullName }"
+                placeholder="Nhập họ và tên"
+                required
+              />
+              <span v-if="errors.fullName" class="error-message">{{ errors.fullName }}</span>
+            </div>
 
-        <div class="otp-footer">
-          <p v-if="!canResendOTP">
-            Gửi lại mã sau {{ resendCountdown }}s
-          </p>
-          <button
-            v-else
-            @click="resendOTP"
-            :disabled="resendLoading"
-            class="btn-link"
-          >
-            {{ resendLoading ? 'Đang gửi...' : 'Gửi lại mã OTP' }}
-          </button>
-          <button @click="goBackToForm" class="btn-link">Quay lại</button>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                v-model="form.email"
+                :class="{ 'error': errors.email }"
+                placeholder="Nhập email của bạn"
+                required
+              />
+              <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Mật khẩu</label>
+              <div class="password-input">
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  id="password"
+                  v-model="form.password"
+                  :class="{ 'error': errors.password }"
+                  placeholder="Nhập mật khẩu"
+                  required
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="password-toggle"
+                >
+                  {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+              <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Xác nhận mật khẩu</label>
+              <div class="password-input">
+                <input
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword"
+                  v-model="form.confirmPassword"
+                  :class="{ 'error': errors.confirmPassword }"
+                  placeholder="Nhập lại mật khẩu"
+                  required
+                />
+                <button
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="password-toggle"
+                >
+                  {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+              <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                :disabled="loading"
+                class="btn-primary"
+              >
+                {{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
+              </button>
+            </div>
+          </form>
         </div>
-      </div>
 
-      <!-- Step 3: Success -->
-      <div v-else-if="currentStep === 3" class="success-message">
-        <div class="success-icon">✅</div>
-        <h3>Đăng ký thành công!</h3>
-        <p>Tài khoản của bạn đã được tạo thành công. Bạn có thể bắt đầu sử dụng dịch vụ ngay bây giờ.</p>
-        <router-link to="/signIn" class="btn-primary" style="display:inline-block;text-align:center;">Đăng nhập ngay</router-link>
-      </div>
+        <!-- Step 2: OTP Verification -->
+        <div v-else-if="currentStep === 2" class="otp-verification">
+          <div class="otp-header">
+            <div class="otp-icon">📧</div>
+            <h3>Xác thực email</h3>
+            <p>Chúng tôi đã gửi mã OTP đến email <strong>{{ form.email }}</strong></p>
+          </div>
 
-      <div v-if="currentStep === 1" class="auth-footer">
-        <p>Đã có tài khoản? <router-link to="/signIn" class="btn-link">Đăng nhập ngay</router-link></p>
+          <form @submit.prevent="verifyOTP" class="otp-form">
+            <div class="otp-inputs">
+              <input
+                v-for="(digit, index) in otpDigits"
+                :key="index"
+                :ref="el => otpRefs[index] = el"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                v-model="otpDigits[index]"
+                @input="handleOTPInput($event, index)"
+                @keydown="handleOTPKeydown($event, index)"
+                class="otp-input"
+                autocomplete="one-time-code"
+              />
+            </div>
+            <span v-if="errors.otp" class="error-message">{{ errors.otp }}</span>
+            <div class="otp-actions">
+              <button
+                type="submit"
+                :disabled="loading || !isOTPComplete"
+                class="btn-primary"
+                style="display:none;"
+              >
+                Xác thực
+              </button>
+            </div>
+          </form>
+
+          <div class="otp-footer">
+            <p v-if="!canResendOTP">
+              Gửi lại mã sau {{ resendCountdown }}s
+            </p>
+            <button
+              v-else
+              @click="resendOTP"
+              :disabled="resendLoading"
+              class="btn-link"
+            >
+              {{ resendLoading ? 'Đang gửi...' : 'Gửi lại mã OTP' }}
+            </button>
+            <button @click="goBackToForm" class="btn-link">Quay lại</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div v-else-if="currentStep === 3" class="success-message">
+          <div class="success-icon">✅</div>
+          <h3>Đăng ký thành công!</h3>
+          <p>Tài khoản của bạn đã được tạo thành công. Bạn có thể bắt đầu sử dụng dịch vụ ngay bây giờ.</p>
+          <router-link to="/signIn" class="btn-primary" style="display:inline-block;text-align:center;">Đăng nhập ngay</router-link>
+        </div>
+
+        <div v-if="currentStep === 1" class="auth-footer">
+          <p>Đã có tài khoản? <router-link to="/signIn" class="btn-link">Đăng nhập ngay</router-link></p>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script>
@@ -411,13 +413,24 @@ export default {
 </script>
 
 <style scoped>
-.auth-container {
+.signup-main {
+  width: 100vw;
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  box-sizing: border-box;
+}
+.auth-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .auth-card {

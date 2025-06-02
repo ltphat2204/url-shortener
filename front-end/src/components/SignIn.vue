@@ -187,12 +187,15 @@ export default {
 
 <style scoped>
 .auth-container {
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  padding-top: 90px; /* Để tránh bị header che */
+  box-sizing: border-box;
 }
 
 .auth-card {
