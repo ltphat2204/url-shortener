@@ -7,3 +7,18 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
+model SHORT_URL {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  title String @default("")
+  description String @default("")
+  short_code String @unique
+  destination_url String @unique
+  user_id Int
+  create_at DateTime @default(now())
+}
+
+model COUNTERS {
+  id    String @id @map("_id") // Hoặc một kiểu phù hợp nếu _id không phải string
+  value BigInt
+}
