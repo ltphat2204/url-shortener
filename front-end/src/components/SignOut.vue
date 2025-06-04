@@ -1,11 +1,19 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
+const route = useRoute()
 
 function handleLogout() {
+  const needsRedirect = route.meta?.requiresAuth
+
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  router.push('/signIn');
+
+  if (needsRedirect) {
+    router.push('/');
+  } else {
+    router.go(0);
+  }
 }
 </script>
 

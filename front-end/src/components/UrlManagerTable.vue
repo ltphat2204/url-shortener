@@ -347,10 +347,8 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
 
-// Props & Emits
 const emit = defineEmits(['urlAdded', 'urlUpdated', 'urlDeleted'])
 
-// Reactive data
 const urls = ref([])
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -363,7 +361,6 @@ const sortBy = ref('createdAt')
 const sortOrder = ref('desc')
 const selectedRowKeys = ref([])
 
-// Form data
 const form = ref({
   originalUrl: '',
   customShort: '',
@@ -373,10 +370,8 @@ const form = ref({
 
 const formRef = ref()
 
-// Base URL for short links
-const baseUrl = 'https://go.vn/'
+const baseUrl = 'https://url-shortener.vn/'
 
-// Form validation rules
 const rules = {
   originalUrl: [
     { required: true, message: 'Vui lòng nhập URL gốc' },
@@ -393,7 +388,6 @@ const rules = {
   ]
 }
 
-// Table columns configuration
 const columns = [
   {
     title: 'STT',
@@ -440,7 +434,6 @@ const columns = [
   }
 ]
 
-// Pagination config
 const pagination = ref({
   current: 1,
   pageSize: 10,
@@ -450,11 +443,9 @@ const pagination = ref({
   showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`
 })
 
-// Computed properties
 const filteredUrls = computed(() => {
   let result = [...urls.value]
 
-  // Search filter
   if (searchText.value) {
     const search = searchText.value.toLowerCase()
     result = result.filter(url =>
@@ -463,7 +454,6 @@ const filteredUrls = computed(() => {
     )
   }
 
-  // Sort
   result.sort((a, b) => {
     let aVal = a[sortBy.value]
     let bVal = b[sortBy.value]
@@ -483,7 +473,6 @@ const filteredUrls = computed(() => {
   return result
 })
 
-// Update pagination total when filtered URLs change
 watch(filteredUrls, (newUrls) => {
   pagination.value.total = newUrls.length
 }, { immediate: true })
@@ -496,9 +485,7 @@ const averageClicks = computed(() => {
   return urls.value.length > 0 ? totalClicks.value / urls.value.length : 0
 })
 
-// Methods
 const loadMockData = () => {
-  // Load from localStorage or use default data
   const savedUrls = localStorage.getItem('userUrls')
   if (savedUrls) {
     urls.value = JSON.parse(savedUrls)
@@ -551,11 +538,9 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitLoading.value = true
 
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     if (editTarget.value) {
-      // Update existing URL
       const index = urls.value.findIndex(u => u.id === editTarget.value.id)
       if (index !== -1) {
         urls.value[index] = {
@@ -565,7 +550,6 @@ const handleSubmit = async () => {
           clicks: form.value.clicks || 0
         }
 
-        // Update short URL if custom short is provided
         if (form.value.customShort) {
           urls.value[index].shortUrl = baseUrl + form.value.customShort
         }
@@ -574,7 +558,6 @@ const handleSubmit = async () => {
         emit('urlUpdated', urls.value[index])
       }
     } else {
-      // Add new URL
       const shortCode = form.value.customShort || generateShortCode()
       const newUrl = {
         id: Date.now(),
@@ -645,12 +628,10 @@ const onSelectChange = (selectedKeys) => {
 }
 
 const handleSearch = () => {
-  // Search is handled by computed property
   pagination.value.current = 1
 }
 
 const handleSort = () => {
-  // Sort is handled by computed property
   pagination.value.current = 1
 }
 
@@ -695,7 +676,6 @@ const shareUrl = (url) => {
   }
 }
 
-// Utility functions
 const formatDate = (dateStr) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('vi-VN')
@@ -717,12 +697,10 @@ const getClicksColor = (clicks) => {
   return 'default'
 }
 
-// Lifecycle
 onMounted(() => {
   loadMockData()
 })
 
-// Watch for search text changes
 watch(searchText, () => {
   pagination.value.current = 1
 })
@@ -732,7 +710,7 @@ watch(searchText, () => {
 .url-manager-container {
   padding: 24px;
   background: #f0f2f5;
-  min-height: calc(100vh - 70px); /* Adjust for fixed header */
+  min-height: calc(100vh - 70px);
 }
 
 .header-section {
@@ -853,7 +831,6 @@ watch(searchText, () => {
   padding: 16px 0;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .url-manager-container {
     padding: 16px;
@@ -890,7 +867,6 @@ watch(searchText, () => {
   }
 }
 
-/* Custom scrollbar */
 :deep(.ant-table-tbody) {
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f1f1f1;

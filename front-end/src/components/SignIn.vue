@@ -102,13 +102,11 @@ export default {
       this.loading = true;
 
       try {
-        // Validate form
         if (!this.validateForm()) {
           this.loading = false;
           return;
         }
 
-        // Mock login: kiểm tra với mockUsers
         const user = mockUsers.find(
           u => (u.email === this.form.email || u.username === this.form.email)
         );
@@ -122,12 +120,10 @@ export default {
           this.loading = false;
           return;
         }
-        // Đúng tài khoản
         localStorage.setItem('token', 'mock-token');
         localStorage.setItem('user', JSON.stringify(user));
         this.$router.push('/');
-      } catch (error) {
-        console.error('Sign in error:', error);
+      } catch {
         this.errors.general = 'Có lỗi xảy ra, vui lòng thử lại';
       } finally {
         this.loading = false;
@@ -135,7 +131,6 @@ export default {
     },
 
     onGoogleSignIn(credential) {
-      // Decode JWT token với proper base64 decoding để hỗ trợ UTF-8
       let payload = {};
       try {
         const base64Url = credential.split('.')[1];
@@ -145,29 +140,22 @@ export default {
         }).join(''));
 
         payload = JSON.parse(jsonPayload);
-        console.log('Google user payload:', payload); // Debug log
-      } catch (error) {
-        console.error('Error decoding JWT:', error);
+      } catch {
         this.errors.general = 'Lỗi xử lý thông tin đăng nhập Google';
         return;
       }
 
-      // Xử lý tên tiếng Việt đúng cách
       let userName = '';
       if (payload.name) {
-        // Sử dụng trường name có sẵn (đã được Google format đúng)
         userName = payload.name;
       } else if (payload.given_name && payload.family_name) {
-        // Ghép tên theo format Việt Nam: Họ + Tên đệm + Tên
         userName = `${payload.family_name} ${payload.given_name}`.trim();
       } else if (payload.given_name) {
         userName = payload.given_name;
       } else {
-        // Fallback: sử dụng phần trước @ của email
         userName = payload.email?.split('@')[0] || 'User';
       }
 
-      // Tạo user object với encoding UTF-8 đúng
       const userObject = {
         id: payload.sub,
         username: payload.email?.split('@')[0] || '',
@@ -179,34 +167,27 @@ export default {
         verified_email: payload.email_verified || false
       };
 
-      console.log('Formatted user object:', userObject); // Debug log
-
-      // Lưu user vào localStorage/mockUsers nếu chưa có
       const existed = mockUsers.find(u => u.email === payload.email);
       if (!existed) {
-        // Nếu chưa có thì thêm vào mockUsers với thông tin đầy đủ
         mockUsers.push({
           username: userObject.username,
           email: userObject.email,
-          password: '', // Google users không có password local
+          password: '',
           name: userObject.name,
           picture: userObject.picture,
           google_id: userObject.google_id
         });
       }
 
-      // Lưu user object đã format vào localStorage
       localStorage.setItem('user', JSON.stringify(userObject));
       localStorage.setItem('token', credential);
 
-      // Chuyển thẳng vào homepage
       this.$router.push('/');
     },
 
     validateForm() {
       let isValid = true;
 
-      // Email validation
       if (!this.form.email) {
         this.errors.email = 'Email là bắt buộc';
         isValid = false;
@@ -215,7 +196,6 @@ export default {
         isValid = false;
       }
 
-      // Password validation
       if (!this.form.password) {
         this.errors.password = 'Mật khẩu là bắt buộc';
         isValid = false;

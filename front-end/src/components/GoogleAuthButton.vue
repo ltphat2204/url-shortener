@@ -29,7 +29,6 @@ export default {
     },
 
     loadGoogleScript() {
-      // Inject Google Identity Services script if not present
       if (!window.google || !window.google.accounts) {
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';

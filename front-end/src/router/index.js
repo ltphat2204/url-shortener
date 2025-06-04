@@ -31,6 +31,7 @@ const router = createRouter({
 			path: '/url-manager',
 			name: 'UrlManager',
 			component: () => import('../views/UrlManagerView.vue'),
+			meta: { requiresAuth: true },
 		},
 	],
 })

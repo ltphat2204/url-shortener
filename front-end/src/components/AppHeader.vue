@@ -84,13 +84,13 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const user = ref(null)
 const showDropdown = ref(false)
 
-// Reactive user state
 onMounted(() => {
   updateUserState()
   window.addEventListener('storage', updateUserState)
@@ -132,11 +132,15 @@ function closeDropdown(event) {
 }
 
 function handleLogout() {
+  const needsRedirect = route.meta?.requiresAuth
+
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   user.value = null
   showDropdown.value = false
-  router.push('/signIn')
+  if (needsRedirect) {
+    router.push('/');
+  }
 }
 </script>
 

@@ -246,28 +246,24 @@ export default {
       this.errors = {};
       this.loading = true;
       try {
-        // Validate form
         if (!this.validateForm()) {
           this.loading = false;
           return;
         }
-        // Kiểm tra email đã tồn tại chưa
         const existed = mockUsers.find(u => u.email === this.form.email);
         if (existed) {
           this.errors.email = 'Email đã tồn tại';
           this.loading = false;
           return;
         }
-        // Sinh mã OTP ngẫu nhiên
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         this.generatedOTP = otp;
-        // Gửi mail thật bằng EmailJS
         await emailjs.send(
           import.meta.env.VITE_EMAILJS_SERVICE_ID,
           import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
           {
-            email: this.form.email, // đúng tên biến template
-            otp: otp,               // đúng tên biến template
+            email: this.form.email,
+            otp: otp,
             to_name: this.form.fullName || this.form.email
           },
           import.meta.env.VITE_EMAILJS_PUBLIC_KEY
@@ -285,9 +281,7 @@ export default {
       this.errors = {};
       this.loading = true;
       try {
-        // So sánh mã OTP nhập vào với mã đã gửi
         if (this.otpCode === this.generatedOTP) {
-          // Thêm user vào localStorage và mockUsers qua addMockUser
           addMockUser({
             username: this.form.email.split('@')[0],
             email: this.form.email,
@@ -331,7 +325,6 @@ export default {
     validateForm() {
       let isValid = true;
 
-      // Full name validation
       if (!this.form.fullName.trim()) {
         this.errors.fullName = 'Họ và tên là bắt buộc';
         isValid = false;
@@ -340,7 +333,6 @@ export default {
         isValid = false;
       }
 
-      // Email validation
       if (!this.form.email) {
         this.errors.email = 'Email là bắt buộc';
         isValid = false;
@@ -349,7 +341,6 @@ export default {
         isValid = false;
       }
 
-      // Password validation
       if (!this.form.password) {
         this.errors.password = 'Mật khẩu là bắt buộc';
         isValid = false;
@@ -361,7 +352,6 @@ export default {
         isValid = false;
       }
 
-      // Confirm password validation
       if (!this.form.confirmPassword) {
         this.errors.confirmPassword = 'Xác nhận mật khẩu là bắt buộc';
         isValid = false;
@@ -386,7 +376,6 @@ export default {
           this.otpRefs[index + 1]?.focus();
         });
       }
-      // Nếu nhập đủ 6 số thì tự xác thực
       if (this.otpDigits.every(d => d.length === 1)) {
         this.verifyOTP();
       }
@@ -429,7 +418,6 @@ export default {
     },
 
     onGoogleSignUp(credential) {
-      // Decode JWT token với proper base64 decoding để hỗ trợ UTF-8
       let payload = {};
       try {
         const base64Url = credential.split('.')[1];
@@ -439,14 +427,11 @@ export default {
         }).join(''));
 
         payload = JSON.parse(jsonPayload);
-        console.log('Google signup payload:', payload);
-      } catch (error) {
-        console.error('Error decoding JWT:', error);
+      } catch {
         this.errors.general = 'Lỗi xử lý thông tin đăng ký Google';
         return;
       }
 
-      // Xử lý tên tiếng Việt đúng cách
       let userName = '';
       if (payload.name) {
         userName = payload.name;
@@ -458,7 +443,6 @@ export default {
         userName = payload.email?.split('@')[0] || 'User';
       }
 
-      // Kiểm tra email đã tồn tại chưa
       const existed = mockUsers.find(u => u.email === payload.email);
       if (existed) {
         alert('Email này đã được đăng ký. Vui lòng sử dụng tính năng đăng nhập.');
@@ -466,7 +450,6 @@ export default {
         return;
       }
 
-      // Tạo user object với encoding UTF-8 đúng
       const userObject = {
         id: payload.sub,
         username: payload.email?.split('@')[0] || '',
@@ -478,21 +461,18 @@ export default {
         verified_email: payload.email_verified || false
       };
 
-      // Thêm user vào mockUsers
       addMockUser({
         username: userObject.username,
         email: userObject.email,
-        password: '', // Google users không có password local
+        password: '',
         name: userObject.name,
         picture: userObject.picture,
         google_id: userObject.google_id
       });
 
-      // Lưu user object đã format vào localStorage
       localStorage.setItem('user', JSON.stringify(userObject));
       localStorage.setItem('token', credential);
 
-      // Chuyển thẳng vào homepage (đăng ký thành công)
       this.$router.push('/');
     }
   },
