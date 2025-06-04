@@ -52,7 +52,16 @@
                   @click="showPassword = !showPassword"
                   class="password-toggle"
                 >
-                  {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                  <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a13.16 13.16 0 0 1-1.67 2.68"/>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/>
+                    <line x1="2" y1="2" x2="22" y2="22"/>
+                  </svg>
                 </button>
               </div>
               <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
@@ -74,7 +83,16 @@
                   @click="showConfirmPassword = !showConfirmPassword"
                   class="password-toggle"
                 >
-                  {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+                  <svg v-if="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a13.16 13.16 0 0 1-1.67 2.68"/>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/>
+                    <line x1="2" y1="2" x2="22" y2="22"/>
+                  </svg>
                 </button>
               </div>
               <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
@@ -86,16 +104,28 @@
                 :disabled="loading"
                 class="btn-primary"
               >
+                <span v-if="loading" class="loading-spinner"></span>
                 {{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
               </button>
             </div>
           </form>
+
+          <div class="divider">
+            <span>hoặc</span>
+          </div>
+
+          <GoogleAuthButton @success="onGoogleSignUp" />
         </div>
 
         <!-- Step 2: OTP Verification -->
         <div v-else-if="currentStep === 2" class="otp-verification">
           <div class="otp-header">
-            <div class="otp-icon">📧</div>
+            <div class="otp-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
             <h3>Xác thực email</h3>
             <p>Chúng tôi đã gửi mã OTP đến email <strong>{{ form.email }}</strong></p>
           </div>
@@ -148,7 +178,12 @@
 
         <!-- Step 3: Success -->
         <div v-else-if="currentStep === 3" class="success-message">
-          <div class="success-icon">✅</div>
+          <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22,4 12,14.01 9,11.01"/>
+            </svg>
+          </div>
           <h3>Đăng ký thành công!</h3>
           <p>Tài khoản của bạn đã được tạo thành công. Bạn có thể bắt đầu sử dụng dịch vụ ngay bây giờ.</p>
           <router-link to="/signIn" class="btn-primary" style="display:inline-block;text-align:center;">Đăng nhập ngay</router-link>
@@ -165,9 +200,13 @@
 <script>
 import { mockUsers, addMockUser } from '../stores/mockUsers.js';
 import emailjs from 'emailjs-com';
+import GoogleAuthButton from './GoogleAuthButton.vue';
 
 export default {
   name: 'SignUp',
+  components: {
+    GoogleAuthButton
+  },
   data() {
     return {
       currentStep: 1, // 1: Form, 2: OTP, 3: Success
@@ -233,7 +272,6 @@ export default {
           },
           import.meta.env.VITE_EMAILJS_PUBLIC_KEY
         );
-        this.$toast && this.$toast.info ? this.$toast.info('Đã gửi mã xác thực OTP về email!') : alert('Đã gửi mã xác thực OTP về email!');
         this.currentStep = 2;
         this.startOTPCountdown();
       } catch {
@@ -258,7 +296,6 @@ export default {
           });
           this.currentStep = 3;
           this.stopOTPCountdown();
-          this.$toast && this.$toast.success ? this.$toast.success('Xác thực thành công!') : alert('Xác thực thành công!');
         } else {
           this.errors.otp = 'Mã OTP không hợp lệ';
         }
@@ -389,20 +426,74 @@ export default {
 
     goToSignIn() {
       this.$router.push('/signIn');
-    }
-  },
+    },
 
-  mounted() {
-    // Inject Google Identity Services script
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = this.renderGoogleButton;
-      document.head.appendChild(script);
-    } else {
-      this.renderGoogleButton();
+    onGoogleSignUp(credential) {
+      // Decode JWT token với proper base64 decoding để hỗ trợ UTF-8
+      let payload = {};
+      try {
+        const base64Url = credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        payload = JSON.parse(jsonPayload);
+        console.log('Google signup payload:', payload);
+      } catch (error) {
+        console.error('Error decoding JWT:', error);
+        this.errors.general = 'Lỗi xử lý thông tin đăng ký Google';
+        return;
+      }
+
+      // Xử lý tên tiếng Việt đúng cách
+      let userName = '';
+      if (payload.name) {
+        userName = payload.name;
+      } else if (payload.given_name && payload.family_name) {
+        userName = `${payload.family_name} ${payload.given_name}`.trim();
+      } else if (payload.given_name) {
+        userName = payload.given_name;
+      } else {
+        userName = payload.email?.split('@')[0] || 'User';
+      }
+
+      // Kiểm tra email đã tồn tại chưa
+      const existed = mockUsers.find(u => u.email === payload.email);
+      if (existed) {
+        alert('Email này đã được đăng ký. Vui lòng sử dụng tính năng đăng nhập.');
+        this.$router.push('/signIn');
+        return;
+      }
+
+      // Tạo user object với encoding UTF-8 đúng
+      const userObject = {
+        id: payload.sub,
+        username: payload.email?.split('@')[0] || '',
+        email: payload.email,
+        name: userName,
+        picture: payload.picture,
+        google_id: payload.sub,
+        locale: payload.locale || 'vi',
+        verified_email: payload.email_verified || false
+      };
+
+      // Thêm user vào mockUsers
+      addMockUser({
+        username: userObject.username,
+        email: userObject.email,
+        password: '', // Google users không có password local
+        name: userObject.name,
+        picture: userObject.picture,
+        google_id: userObject.google_id
+      });
+
+      // Lưu user object đã format vào localStorage
+      localStorage.setItem('user', JSON.stringify(userObject));
+      localStorage.setItem('token', credential);
+
+      // Chuyển thẳng vào homepage (đăng ký thành công)
+      this.$router.push('/');
     }
   },
 
@@ -418,19 +509,22 @@ export default {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   box-sizing: border-box;
+  padding: 20px;
+  overflow-y: auto;
 }
+
 .auth-container {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
-  padding: 0;
+  padding: 20px;
   box-sizing: border-box;
+  min-height: calc(100vh - 40px);
 }
 
 .auth-card {
@@ -440,8 +534,7 @@ export default {
   padding: 40px;
   width: 100%;
   max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
+  margin: auto;
 }
 
 .auth-header {
@@ -509,6 +602,39 @@ export default {
   border: none;
   cursor: pointer;
   padding: 4px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #667eea;
+}
+
+.password-toggle svg {
+  display: block;
+}
+
+.divider {
+  margin: 20px 0;
+  text-align: center;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e1e5e9;
+}
+
+.divider span {
+  background: white;
+  padding: 0 16px;
+  color: #666;
+  font-size: 14px;
 }
 
 .error-message {
@@ -544,6 +670,22 @@ export default {
   cursor: not-allowed;
 }
 
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .otp-verification {
   text-align: center;
 }
@@ -553,8 +695,13 @@ export default {
 }
 
 .otp-icon {
-  font-size: 48px;
   margin-bottom: 20px;
+  color: #667eea;
+}
+
+.otp-icon svg {
+  display: block;
+  margin: 0 auto;
 }
 
 .otp-header h3 {

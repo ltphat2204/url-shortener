@@ -21,6 +21,5 @@ export default {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding-top: 0;
 }
 </style>

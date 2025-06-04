@@ -36,7 +36,16 @@
               @click="showPassword = !showPassword"
               class="password-toggle"
             >
-              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a13.16 13.16 0 0 1-1.67 2.68"/>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/>
+                <line x1="2" y1="2" x2="22" y2="22"/>
+              </svg>
             </button>
           </div>
           <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
@@ -48,6 +57,7 @@
             :disabled="loading"
             class="btn-primary"
           >
+            <span v-if="loading" class="loading-spinner"></span>
             {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
           </button>
         </div>
@@ -116,7 +126,6 @@ export default {
         localStorage.setItem('token', 'mock-token');
         localStorage.setItem('user', JSON.stringify(user));
         this.$router.push('/');
-        this.$toast && this.$toast.success ? this.$toast.success('Đăng nhập thành công!') : alert('Đăng nhập thành công!');
       } catch (error) {
         console.error('Sign in error:', error);
         this.errors.general = 'Có lỗi xảy ra, vui lòng thử lại';
@@ -126,25 +135,70 @@ export default {
     },
 
     onGoogleSignIn(credential) {
-      // Decode JWT để lấy thông tin user
+      // Decode JWT token với proper base64 decoding để hỗ trợ UTF-8
       let payload = {};
       try {
-        payload = JSON.parse(atob(credential.split('.')[1]));
-      } catch { /* ignore decode error */ }
+        const base64Url = credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        payload = JSON.parse(jsonPayload);
+        console.log('Google user payload:', payload); // Debug log
+      } catch (error) {
+        console.error('Error decoding JWT:', error);
+        this.errors.general = 'Lỗi xử lý thông tin đăng nhập Google';
+        return;
+      }
+
+      // Xử lý tên tiếng Việt đúng cách
+      let userName = '';
+      if (payload.name) {
+        // Sử dụng trường name có sẵn (đã được Google format đúng)
+        userName = payload.name;
+      } else if (payload.given_name && payload.family_name) {
+        // Ghép tên theo format Việt Nam: Họ + Tên đệm + Tên
+        userName = `${payload.family_name} ${payload.given_name}`.trim();
+      } else if (payload.given_name) {
+        userName = payload.given_name;
+      } else {
+        // Fallback: sử dụng phần trước @ của email
+        userName = payload.email?.split('@')[0] || 'User';
+      }
+
+      // Tạo user object với encoding UTF-8 đúng
+      const userObject = {
+        id: payload.sub,
+        username: payload.email?.split('@')[0] || '',
+        email: payload.email,
+        name: userName,
+        picture: payload.picture,
+        google_id: payload.sub,
+        locale: payload.locale || 'vi',
+        verified_email: payload.email_verified || false
+      };
+
+      console.log('Formatted user object:', userObject); // Debug log
+
       // Lưu user vào localStorage/mockUsers nếu chưa có
       const existed = mockUsers.find(u => u.email === payload.email);
       if (!existed) {
-        // Nếu chưa có thì thêm vào mockUsers
+        // Nếu chưa có thì thêm vào mockUsers với thông tin đầy đủ
         mockUsers.push({
-          username: payload.email?.split('@')[0] || '',
-          email: payload.email,
-          password: '',
-          name: payload.name || payload.email
+          username: userObject.username,
+          email: userObject.email,
+          password: '', // Google users không có password local
+          name: userObject.name,
+          picture: userObject.picture,
+          google_id: userObject.google_id
         });
       }
-      // Lưu user vào localStorage
-      localStorage.setItem('user', JSON.stringify(payload));
+
+      // Lưu user object đã format vào localStorage
+      localStorage.setItem('user', JSON.stringify(userObject));
       localStorage.setItem('token', credential);
+
       // Chuyển thẳng vào homepage
       this.$router.push('/');
     },
@@ -194,7 +248,6 @@ export default {
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
-  padding-top: 90px; /* Để tránh bị header che */
   box-sizing: border-box;
 }
 
@@ -245,7 +298,7 @@ export default {
   border: 2px solid #e1e5e9;
   border-radius: 8px;
   font-size: 16px;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
   box-sizing: border-box;
   color: black;
 }
@@ -253,6 +306,7 @@ export default {
 .form-group input:focus {
   outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-group input.error {
@@ -273,6 +327,16 @@ export default {
   border: none;
   cursor: pointer;
   padding: 4px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #667eea;
+}
+
+.password-toggle svg {
+  display: block;
 }
 
 .error-message {
@@ -306,6 +370,22 @@ export default {
 .btn-primary:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .divider {
