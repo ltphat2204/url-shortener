@@ -77,7 +77,7 @@
 </template>
 
 <script>
-import { mockUsers } from '../stores/mockUsers.js';
+import { mockUsers } from '../mock/mockUsers.js';
 import GoogleAuthButton from './GoogleAuthButton.vue';
 
 export default {

@@ -27,7 +27,7 @@
     <!-- Statistics Cards -->
     <div class="stats-section">
       <a-row :gutter="16">
-        <a-col :span="8">
+        <a-col :span="12">
           <a-card class="stat-card">
             <a-statistic
               title="Tổng URL"
@@ -40,29 +40,15 @@
             </a-statistic>
           </a-card>
         </a-col>
-        <a-col :span="8">
+        <a-col :span="12">
           <a-card class="stat-card">
             <a-statistic
-              title="Tổng lượt click"
-              :value="totalClicks"
+              title="URL hoạt động"
+              :value="urls.length"
               :value-style="{ color: '#52c41a' }"
             >
               <template #prefix>
-                <a-icon type="eye" />
-              </template>
-            </a-statistic>
-          </a-card>
-        </a-col>
-        <a-col :span="8">
-          <a-card class="stat-card">
-            <a-statistic
-              title="Click trung bình"
-              :value="averageClicks"
-              :precision="1"
-              :value-style="{ color: '#faad14' }"
-            >
-              <template #prefix>
-                <a-icon type="bar-chart" />
+                <a-icon type="check-circle" />
               </template>
             </a-statistic>
           </a-card>
@@ -94,7 +80,6 @@
               @change="handleSort"
             >
               <a-select-option value="createdAt">Ngày tạo</a-select-option>
-              <a-select-option value="clicks">Lượt click</a-select-option>
               <a-select-option value="shortUrl">URL ngắn</a-select-option>
             </a-select>
           </a-col>
@@ -157,16 +142,20 @@
                 <a :href="record.shortUrl" target="_blank" class="short-url-link">
                   {{ record.shortUrl }}
                 </a>
-                <a-button
-                  type="text"
-                  size="small"
-                  @click="copyToClipboard(record.shortUrl)"
-                  title="Sao chép"
-                >
-                  <template #icon>
-                    <a-icon type="copy" />
-                  </template>
-                </a-button>
+                <a-tooltip title="Sao chép">
+                  <a-button
+                    type="text"
+                    size="small"
+                    @click="copyToClipboard(record.shortUrl)"
+                  >
+                    <template #icon>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                    </template>
+                  </a-button>
+                </a-tooltip>
               </div>
             </template>
 
@@ -177,17 +166,6 @@
                   {{ truncateUrl(record.originalUrl, 50) }}
                 </a>
               </a-tooltip>
-            </template>
-
-            <!-- Custom render cho cột Clicks -->
-            <template v-else-if="column.key === 'clicks'">
-              <a-tag
-                :color="getClicksColor(record.clicks)"
-                class="clicks-tag"
-              >
-                <a-icon type="eye" />
-                {{ record.clicks }}
-              </a-tag>
             </template>
 
             <!-- Custom render cho cột Created Date -->
@@ -201,45 +179,62 @@
             <!-- Custom render cho cột Actions -->
             <template v-else-if="column.key === 'actions'">
               <a-space>
-                <a-button
-                  type="primary"
-                  size="small"
-                  @click="editUrl(record)"
-                >
-                  <template #icon>
-                    <a-icon type="edit" />
-                  </template>
-                </a-button>
+                <a-tooltip title="Chỉnh sửa">
+                  <a-button
+                    type="primary"
+                    size="small"
+                    @click="editUrl(record)"
+                  >
+                    <template #icon>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </template>
+                  </a-button>
+                </a-tooltip>
                 <a-popconfirm
                   title="Bạn có chắc muốn xóa URL này?"
                   ok-text="Xóa"
                   cancel-text="Hủy"
                   @confirm="deleteUrl(record.id)"
                 >
-                  <a-button
-                    type="primary"
-                    danger
-                    size="small"
-                  >
-                    <template #icon>
-                      <a-icon type="delete" />
-                    </template>
-                  </a-button>
+                  <a-tooltip title="Xóa">
+                    <a-button
+                      type="primary"
+                      danger
+                      size="small"
+                    >
+                      <template #icon>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3,6 5,6 21,6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                 </a-popconfirm>
                 <a-dropdown>
-                  <a-button size="small">
-                    <template #icon>
-                      <a-icon type="more" />
-                    </template>
-                  </a-button>
+                  <a-tooltip title="Thêm tùy chọn">
+                    <a-button size="small">
+                      <template #icon>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="1"/>
+                          <circle cx="19" cy="12" r="1"/>
+                          <circle cx="5" cy="12" r="1"/>
+                        </svg>
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                   <template #overlay>
                     <a-menu>
-                      <a-menu-item @click="viewAnalytics(record)">
-                        <a-icon type="bar-chart" />
-                        Xem thống kê
-                      </a-menu-item>
                       <a-menu-item @click="shareUrl(record)">
-                        <a-icon type="share-alt" />
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; display: inline;">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                        </svg>
                         Chia sẻ
                       </a-menu-item>
                     </a-menu>
@@ -270,10 +265,10 @@
         layout="vertical"
         class="url-form"
       >
-        <a-form-item label="URL gốc" name="originalUrl">
+        <a-form-item label="URL đích" name="originalUrl">
           <a-input
             v-model:value="form.originalUrl"
-            placeholder="Nhập URL gốc (VD: https://example.com)"
+            placeholder="Nhập URL đích (VD: https://example.com)"
             size="large"
           >
             <template #prefix>
@@ -304,41 +299,7 @@
             :maxlength="200"
           />
         </a-form-item>
-
-        <a-form-item v-if="editTarget" label="Số lượt click" name="clicks">
-          <a-input-number
-            v-model:value="form.clicks"
-            :min="0"
-            size="large"
-            style="width: 100%"
-          >
-            <template #prefix>
-              <a-icon type="eye" />
-            </template>
-          </a-input-number>
-        </a-form-item>
       </a-form>
-    </a-modal>
-
-    <!-- Modal Analytics -->
-    <a-modal
-      v-model:open="showAnalyticsModal"
-      title="Thống kê URL"
-      :footer="null"
-      width="800px"
-    >
-      <div v-if="selectedUrl" class="analytics-content">
-        <a-descriptions title="Thông tin URL" bordered :column="2">
-          <a-descriptions-item label="URL ngắn">
-            <a :href="selectedUrl.shortUrl" target="_blank">{{ selectedUrl.shortUrl }}</a>
-          </a-descriptions-item>
-          <a-descriptions-item label="URL gốc">
-            <a :href="selectedUrl.originalUrl" target="_blank">{{ truncateUrl(selectedUrl.originalUrl, 40) }}</a>
-          </a-descriptions-item>
-          <a-descriptions-item label="Lượt click">{{ selectedUrl.clicks }}</a-descriptions-item>
-          <a-descriptions-item label="Ngày tạo">{{ formatDate(selectedUrl.createdAt) }}</a-descriptions-item>
-        </a-descriptions>
-      </div>
     </a-modal>
   </div>
 </template>
@@ -353,9 +314,7 @@ const urls = ref([])
 const loading = ref(false)
 const submitLoading = ref(false)
 const showAddModal = ref(false)
-const showAnalyticsModal = ref(false)
 const editTarget = ref(null)
-const selectedUrl = ref(null)
 const searchText = ref('')
 const sortBy = ref('createdAt')
 const sortOrder = ref('desc')
@@ -364,8 +323,7 @@ const selectedRowKeys = ref([])
 const form = ref({
   originalUrl: '',
   customShort: '',
-  description: '',
-  clicks: 0
+  description: ''
 })
 
 const formRef = ref()
@@ -374,7 +332,7 @@ const baseUrl = 'https://url-shortener.vn/'
 
 const rules = {
   originalUrl: [
-    { required: true, message: 'Vui lòng nhập URL gốc' },
+    { required: true, message: 'Vui lòng nhập URL đích' },
     {
       pattern: /^https?:\/\/.+/,
       message: 'URL phải bắt đầu bằng http:// hoặc https://'
@@ -403,19 +361,11 @@ const columns = [
     ellipsis: true
   },
   {
-    title: 'URL gốc',
+    title: 'URL đích',
     key: 'originalUrl',
     dataIndex: 'originalUrl',
     width: 300,
     ellipsis: true
-  },
-  {
-    title: 'Lượt click',
-    key: 'clicks',
-    dataIndex: 'clicks',
-    width: 120,
-    align: 'center',
-    sorter: (a, b) => a.clicks - b.clicks
   },
   {
     title: 'Ngày tạo',
@@ -477,14 +427,6 @@ watch(filteredUrls, (newUrls) => {
   pagination.value.total = newUrls.length
 }, { immediate: true })
 
-const totalClicks = computed(() => {
-  return urls.value.reduce((sum, url) => sum + url.clicks, 0)
-})
-
-const averageClicks = computed(() => {
-  return urls.value.length > 0 ? totalClicks.value / urls.value.length : 0
-})
-
 const loadMockData = () => {
   const savedUrls = localStorage.getItem('userUrls')
   if (savedUrls) {
@@ -495,7 +437,6 @@ const loadMockData = () => {
         id: 1,
         shortUrl: 'https://go.vn/abc123',
         originalUrl: 'https://www.google.com/',
-        clicks: 123,
         description: 'Trang chủ Google',
         createdAt: '2024-06-01T10:00:00Z',
       },
@@ -503,7 +444,6 @@ const loadMockData = () => {
         id: 2,
         shortUrl: 'https://go.vn/xyz789',
         originalUrl: 'https://www.facebook.com/',
-        clicks: 45,
         description: 'Trang Facebook',
         createdAt: '2024-06-02T12:30:00Z',
       },
@@ -511,7 +451,6 @@ const loadMockData = () => {
         id: 3,
         shortUrl: 'https://go.vn/hello',
         originalUrl: 'https://chat.openai.com/',
-        clicks: 9,
         description: 'ChatGPT',
         createdAt: '2024-06-03T08:15:00Z',
       },
@@ -546,8 +485,7 @@ const handleSubmit = async () => {
         urls.value[index] = {
           ...urls.value[index],
           originalUrl: form.value.originalUrl,
-          description: form.value.description,
-          clicks: form.value.clicks || 0
+          description: form.value.description
         }
 
         if (form.value.customShort) {
@@ -564,7 +502,6 @@ const handleSubmit = async () => {
         shortUrl: baseUrl + shortCode,
         originalUrl: form.value.originalUrl,
         description: form.value.description || '',
-        clicks: 0,
         createdAt: new Date().toISOString()
       }
 
@@ -589,8 +526,7 @@ const handleCancel = () => {
   form.value = {
     originalUrl: '',
     customShort: '',
-    description: '',
-    clicks: 0
+    description: ''
   }
   formRef.value?.resetFields()
 }
@@ -600,8 +536,7 @@ const editUrl = (url) => {
   form.value = {
     originalUrl: url.originalUrl,
     customShort: url.shortUrl.replace(baseUrl, ''),
-    description: url.description || '',
-    clicks: url.clicks || 0
+    description: url.description || ''
   }
   showAddModal.value = true
 }
@@ -657,11 +592,6 @@ const copyToClipboard = async (text) => {
   }
 }
 
-const viewAnalytics = (url) => {
-  selectedUrl.value = url
-  showAnalyticsModal.value = true
-}
-
 const shareUrl = (url) => {
   const shareData = {
     title: 'Chia sẻ liên kết',
@@ -690,13 +620,6 @@ const truncateUrl = (url, maxLength) => {
   return url.length > maxLength ? url.substring(0, maxLength) + '...' : url
 }
 
-const getClicksColor = (clicks) => {
-  if (clicks >= 100) return 'green'
-  if (clicks >= 50) return 'orange'
-  if (clicks >= 10) return 'blue'
-  return 'default'
-}
-
 onMounted(() => {
   loadMockData()
 })
@@ -709,8 +632,9 @@ watch(searchText, () => {
 <style scoped>
 .url-manager-container {
   padding: 24px;
+  padding-top: 118px; /* Thêm padding-top để tránh header fixed */
   background: #f0f2f5;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 94px); /* Updated to match new header height */
 }
 
 .header-section {
@@ -802,13 +726,6 @@ watch(searchText, () => {
   text-decoration: underline;
 }
 
-.clicks-tag {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 500;
-}
-
 .date-cell {
   text-align: center;
 }
@@ -825,10 +742,6 @@ watch(searchText, () => {
 
 .url-form {
   margin-top: 16px;
-}
-
-.analytics-content {
-  padding: 16px 0;
 }
 
 @media (max-width: 768px) {

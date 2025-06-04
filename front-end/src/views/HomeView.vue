@@ -15,7 +15,7 @@ import AppHeader from '@/components/AppHeader.vue'
 .home-main {
   width: 100%;
   max-width: 900px;
-  margin: 40px auto 0 auto;
+  margin: 118px auto 0 auto;
   padding: 32px 24px;
   background: #181818;
   border-radius: 16px;
@@ -35,5 +35,38 @@ import AppHeader from '@/components/AppHeader.vue'
   color: #bdbdbd;
   font-size: 1.2rem;
   margin-bottom: 0;
+}
+
+
+@media (max-width: 768px) {
+  .home-main {
+    margin: 110px auto 0 auto; /* Slightly less top margin on mobile */
+    padding: 24px 16px; /* Reduce padding on mobile */
+    max-width: calc(100% - 32px); /* Ensure some margin on sides */
+  }
+
+  .home-title {
+    font-size: 1.8rem; /* Smaller title on mobile */
+  }
+
+  .home-desc {
+    font-size: 1rem; /* Smaller description on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .home-main {
+    margin: 106px auto 0 auto; /* Even less top margin on small screens */
+    padding: 20px 12px;
+    max-width: calc(100% - 24px);
+  }
+
+  .home-title {
+    font-size: 1.6rem;
+  }
+
+  .home-desc {
+    font-size: 0.9rem;
+  }
 }
 </style>

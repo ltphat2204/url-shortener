@@ -1,6 +1,5 @@
 <template>
   <div class="url-manager-view">
-    <!-- App Header -->
     <AppHeader />
 
     <!-- Main Content -->
@@ -18,30 +17,22 @@
 import AppHeader from '@/components/AppHeader.vue'
 import UrlManagerTable from '@/components/UrlManagerTable.vue'
 
-// Event handlers
 const handleUrlAdded = (url) => {
   console.log('URL đã được thêm:', url)
-  // Có thể thêm logic khác như gửi analytics, notification, etc.
 }
 
 const handleUrlUpdated = (url) => {
   console.log('URL đã được cập nhật:', url)
-  // Có thể thêm logic khác
 }
 
 const handleUrlDeleted = (url) => {
   console.log('URL đã được xóa:', url)
-  // Có thể thêm logic khác
 }
 </script>
 
 <style scoped>
-.url-manager-view {
-  padding-top: 70px; /* Add padding to avoid header overlap */
-}
-
 .main-content {
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 94px);
 }
 
 .url-manager-main {

@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { mockUsers, addMockUser } from '../stores/mockUsers.js';
+import { mockUsers, addMockUser } from '../mock/mockUsers.js';
 import emailjs from 'emailjs-com';
 import GoogleAuthButton from './GoogleAuthButton.vue';
 

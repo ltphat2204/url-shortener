@@ -163,7 +163,7 @@ function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 12px 32px;
   min-height: 70px;
   position: relative;
 }
@@ -440,13 +440,13 @@ function handleLogout() {
   }
 
   .header-content {
-    padding: 0 24px;
+    padding: 12px 24px; /* Maintain vertical padding */
   }
 }
 
 @media (max-width: 768px) {
   .header-content {
-    padding: 0 16px;
+    padding: 12px 16px; /* Maintain vertical padding */
   }
 
   .btn-auth {
