@@ -31,4 +31,4 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Acknowledgements
 
-This project is inspired by real-world URL shortener services (e.g., Bitly, TinyURL) and aims to provide a practical example of microservices architecture. Special thanks to PhD. Ngo Huy Bien and MSc. Ngo Ngoc Dang Khoa (VNU, HCMUS) for the guidance and support in the development of this project.
+This project is inspired by real-world URL shortener services (e.g., Bitly, TinyURL) and aims to provide a practical example of microservices architecture. Special thanks to PhD. Ngo Huy Bien, MSc. Ho Tuan Thanh (VNU, HCMUS) and MSc. Ngo Ngoc Dang Khoa (VNU, HCMUS) for the guidance and support in the development of this project.
