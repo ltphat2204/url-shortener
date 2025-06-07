@@ -1,0 +1,27 @@
+services:
+  redirect-service:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - redirect-network
+
+  redis:
+    image: "redis:alpine"
+    networks:
+      - redirect-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  redirect-network:
+    driver: bridge
