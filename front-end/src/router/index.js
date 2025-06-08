@@ -38,16 +38,16 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+	const token = localStorage.getItem('token')
+	const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
-  if (requiresAuth && !token) {
-    next('/signIn')
-  } else if ((to.path === '/signIn' || to.path === '/signUp') && token) {
-    next('/')
-  } else {
-    next()
-  }
+	if (requiresAuth && !token) {
+		next('/signIn')
+	} else if ((to.path === '/signIn' || to.path === '/signUp') && token) {
+		next('/')
+	} else {
+		next()
+	}
 })
 
 export default router
