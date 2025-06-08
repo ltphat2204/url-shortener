@@ -1,20 +1,40 @@
 services:
-  redirect-service:
+  redirect-service1:
     build: .
-    ports:
-      - "8080:8080"
     env_file:
       - .env
     depends_on:
       redis:
         condition: service_healthy
     networks:
-      - redirect-network
-
+       - my-microservices-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)" 
+      - "traefik.http.routers.redirect-service.entrypoints=web"
+      - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
+      - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
+      - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
+  redirect-service2:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+       - my-microservices-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)" 
+      - "traefik.http.routers.redirect-service.entrypoints=web"
+      - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
+      - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
+      - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
   redis:
     image: "redis:alpine"
     networks:
-      - redirect-network
+      - my-microservices-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -23,5 +43,5 @@ services:
       start_period: 5s
 
 networks:
-  redirect-network:
-    driver: bridge
+  my-microservices-net: 
+    external: true
