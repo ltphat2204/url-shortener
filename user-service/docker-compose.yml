@@ -3,22 +3,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    networks:
+      - my-microservices-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.users-service.rule=Host(`localhost`) && PathPrefix(`/users`)"
+      - "traefik.http.routers.users-service.entrypoints=web"
+      - "traefik.http.routers.users-service.middlewares=users-stripprefix"
+      - "traefik.http.middlewares.users-stripprefix.stripprefix.prefixes=/users"
+      - "traefik.http.services.users-service.loadbalancer.server.port=8083"
+    restart: always
 
   postgres:
-    image: postgres:13
+    image: postgres:17-alpine
     restart: always
+    networks:
+      - my-microservices-net
     environment:
       POSTGRES_DB: users
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   postgres-data:
+
+networks:
+  my-microservices-net:
+    external: true
