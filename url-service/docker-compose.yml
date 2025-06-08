@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   url-service:
     build:
@@ -14,17 +12,13 @@ services:
       - my-microservices-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.url-service.rule=Host(`localhost`) && PathPrefix(`/urls`)"
+      - "traefik.http.routers.url-service.rule=Host(`localhost`) && PathPrefix(`/url`)"
       - "traefik.http.routers.url-service.entrypoints=web"
-      - "traefik.http.routers.url-service.middlewares=url-stripprefix"
-      - "traefik.http.middlewares.url-stripprefix.stripprefix.prefixes=/urls"
       - "traefik.http.services.url-service.loadbalancer.server.port=3000"
 
   mongodb:
     image: mongo:latest
     container_name: mongodb
-    ports:
-      - "27017:27017"
     networks:
       - my-microservices-net
     volumes:
