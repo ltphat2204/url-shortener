@@ -30,6 +30,7 @@ export class UrlService {
                 const fullShortUrl = `${process.env.REDIRECT_SERVICE_URL}${shortCode}`;
                 return fullShortUrl;
             } catch (error) {
+                console.error('Error creating short URL:', error);
                 if (
                     error instanceof Prisma.PrismaClientKnownRequestError &&
                     error.code === 'P2002'
@@ -46,14 +47,14 @@ export class UrlService {
         );
     }
 
-    async getUrlByShortCode(shortCode: string): Promise<string> {
+    async getUrlByShortCode(shortCode: string){
         const url = await this.prisma.short_url.findUnique({
             where: { short_code: shortCode },
         })
         if (!url) {
             throw new NotFoundException(`Short code "${shortCode}" not found.`);
         }
-        return url.destination_url;
+        return url;
     }
 
     async getShortCode(destination_url: string): Promise<string> {

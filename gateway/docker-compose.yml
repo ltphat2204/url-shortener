@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.9
+    image: traefik:v3.4
     container_name: traefik
     command:
       - "--api.insecure=true"
@@ -11,132 +11,13 @@ services:
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
-      - "8080:8080" # Dashboard
+      - "8081:8080" # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - webnet
-
-  redirect-service:
-    build:
-      context: ../redirect-service
-    container_name: redirect-service
-    env_file:
-      - ../redirect-service/.env
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - webnet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)"
-      - "traefik.http.routers.redirect-service.entrypoints=web"
-      - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
-      - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
-      - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
-
-  redis:
-    image: "redis:alpine"
-    container_name: redis
-    networks:
-      - webnet
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
-
-  url-service:
-    build:
-      context: ../url-service
-    container_name: url-service
-    env_file:
-      - ../url-service/.env
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - webnet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.url-service.rule=Host(`localhost`) && PathPrefix(`/urls`)"
-      - "traefik.http.routers.url-service.entrypoints=web"
-      - "traefik.http.routers.url-service.middlewares=url-stripprefix"
-      - "traefik.http.middlewares.url-stripprefix.stripprefix.prefixes=/urls"
-      - "traefik.http.services.url-service.loadbalancer.server.port=3000"
+      - my-microservices-net
   
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    networks:
-      - webnet
-    volumes:
-      - mongodb_data:/data/db
-    command: ["--replSet", "rs0", "--bind_ip_all"]
-    healthcheck:
-      test: "mongosh --host mongodb:27017 --eval 'db.adminCommand(\"ping\")' || exit 1"
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-
-  mongo-init:
-    image: mongo:latest
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    restart: "no"
-    networks:
-      - webnet
-    command: >
-      mongosh --host mongodb:27017 --eval
-      '
-        try {
-          rs.status();
-          console.log("Replica set already initialized.");
-        } catch (e) {
-          console.log("Initializing replica set...");
-          rs.initiate({
-            _id: "rs0",
-            members: [{ _id: 0, host: "mongodb:27017" }]
-          });
-          console.log("Replica set initialized.");
-        }
-
-        let primary = false;
-        for (let i = 0; i < 30; i++) {
-          if (rs.status().members.some(m => m.stateStr === "PRIMARY")) {
-            primary = true;
-            console.log("Primary found!");
-            break;
-          }
-          console.log("Waiting for primary...");
-          sleep(1000);
-        }
-        if (!primary) throw "Could not find primary";
-
-        const adminDb = db.getSiblingDB("admin");
-        if (!adminDb.system.users.findOne({ user: "root" })) {
-          console.log("Creating root user...");
-          adminDb.createUser({
-            user: "root",
-            pwd: "password",
-            roles: [{ role: "root", db: "admin" }]
-          });
-          console.log("Root user created.");
-        } else {
-          console.log("Root user already exists.");
-        }
-      '
-
-volumes:
-    mongodb_data:
-
 networks:
-  webnet:
-    name: url-shortener-net
-    driver: bridge
+  my-microservices-net:
+    external: true
+    name: my-microservices-net

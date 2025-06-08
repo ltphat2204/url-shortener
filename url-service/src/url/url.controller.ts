@@ -5,7 +5,7 @@ import { CreateUrlDto } from './dto/create-url.dto';
 import { GetShortCodeDto } from './dto/get-short-code.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 
-@Controller('urls')
+@Controller('url')
 export class UrlController {
     constructor(private readonly urlService: UrlService) {}
 
@@ -17,9 +17,20 @@ export class UrlController {
     }
 
     @Get(':shortCode')
-    async getByShortCode(@Param('shortCode') shortCode: string): Promise<string> {
+    async getByShortCode(@Param('shortCode') shortCode: string){
         const result = await this.urlService.getUrlByShortCode(shortCode);
-        return result;
+        const responseData = {
+            short_url_id: result.id, // Giả sử id trong DB là short_url_id
+            title: result.title,
+            description: result.description,
+            short_code: result.short_code,
+            destination_url: result.destination_url,
+            user_id: result.user_id,
+            created_at: result.create_at,
+        };
+        return {
+            data:responseData
+        };
     }
 
     @Post('getShortCode')
