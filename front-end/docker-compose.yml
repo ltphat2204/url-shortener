@@ -1,0 +1,14 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+
+    env_file:
+      - .env
+
+    ports:
+      - "3030:80"
+
+    restart: unless-stopped
