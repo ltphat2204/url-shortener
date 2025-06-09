@@ -124,7 +124,8 @@
 					:loading="loading"
 					:pagination="{
 						...paginationComputed,
-						showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL (Trang ${paginationComputed.current}/${Math.ceil(paginationComputed.total/paginationComputed.pageSize)})`
+						showTotal: (total, range) =>
+							`${range[0]}-${range[1]} / ${total} URL (Trang ${paginationComputed.current}/${Math.ceil(paginationComputed.total / paginationComputed.pageSize)})`,
 					}"
 					:row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
 					row-key="id"
@@ -140,11 +141,7 @@
 						<!-- Custom render cho cột Short URL -->
 						<template v-else-if="column.key === 'shortUrl'">
 							<div class="url-cell">
-								<a
-									:href="record.shortUrl"
-									target="_blank"
-									class="short-url-link"
-								>
+								<a :href="record.shortUrl" target="_blank" class="short-url-link">
 									{{ record.shortUrl }}
 								</a>
 								<a-tooltip title="Sao chép">
@@ -213,7 +210,7 @@
 									<template #overlay>
 										<a-menu>
 											<a-menu-item @click="shareUrl(record.shortUrl)">
-												<ShareAltOutlined style="margin-right: 8px;" />
+												<ShareAltOutlined style="margin-right: 8px" />
 												Chia sẻ
 											</a-menu-item>
 										</a-menu>
@@ -267,11 +264,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
-import {
-	DeleteOutlined,
-	MoreOutlined,
-	ShareAltOutlined
-} from '@ant-design/icons-vue'
+import { DeleteOutlined, MoreOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import UrlService from '../services/urlService.js'
 
 const emit = defineEmits(['urlAdded', 'urlUpdated', 'urlDeleted'])
@@ -369,10 +362,11 @@ const filteredUrls = computed(() => {
 	// Apply search filter
 	if (searchText.value) {
 		const search = searchText.value.toLowerCase()
-		result = result.filter(url =>
-			url.shortUrl.toLowerCase().includes(search) ||
-			url.originalUrl.toLowerCase().includes(search) ||
-			(url.description && url.description.toLowerCase().includes(search))
+		result = result.filter(
+			(url) =>
+				url.shortUrl.toLowerCase().includes(search) ||
+				url.originalUrl.toLowerCase().includes(search) ||
+				(url.description && url.description.toLowerCase().includes(search)),
 		)
 	}
 
@@ -406,17 +400,14 @@ const filteredUrls = computed(() => {
 const paginationComputed = computed(() => {
 	return {
 		...pagination.value,
-		total: filteredUrls.value.length
+		total: filteredUrls.value.length,
 	}
 })
 
-watch(
-	[() => pagination.value.pageSize],
-	() => {
-		// Chỉ reload khi thay đổi page size, không reload khi thay đổi current page
-		loadUrlsFromAPI()
-	},
-)
+watch([() => pagination.value.pageSize], () => {
+	// Chỉ reload khi thay đổi page size, không reload khi thay đổi current page
+	loadUrlsFromAPI()
+})
 
 const loadUrlsFromAPI = async () => {
 	try {
@@ -427,7 +418,7 @@ const loadUrlsFromAPI = async () => {
 		// Xử lý response theo cấu trúc APIResponse mới
 		if (apiResponse.data) {
 			// Map dữ liệu từ backend format sang frontend format
-			urls.value = apiResponse.data.map(url => UrlService.mapBackendUrlToFrontend(url))
+			urls.value = apiResponse.data.map((url) => UrlService.mapBackendUrlToFrontend(url))
 
 			// Cập nhật metadata cho pagination từ API response
 			if (apiResponse.meta) {
@@ -440,7 +431,6 @@ const loadUrlsFromAPI = async () => {
 			urls.value = []
 			pagination.value.total = 0
 		}
-
 	} catch (error) {
 		console.error('Error loading URLs:', error)
 		message.error('Không thể tải danh sách URL. Đang sử dụng dữ liệu offline.')
@@ -519,7 +509,6 @@ const handleSubmit = async () => {
 
 				// Reload data from API
 				await loadUrlsFromAPI()
-
 			} catch (apiError) {
 				console.error('API Error:', apiError)
 				message.error(`Lỗi API: ${apiError.message}`)
@@ -532,7 +521,7 @@ const handleSubmit = async () => {
 					originalUrl: form.value.originalUrl,
 					description: form.value.description || '',
 					createdAt: new Date().toISOString(),
-					shortCode: shortCode
+					shortCode: shortCode,
 				}
 
 				urls.value.unshift(newUrl)
@@ -543,7 +532,6 @@ const handleSubmit = async () => {
 
 		saveToStorage()
 		handleCancel()
-
 	} catch (error) {
 		console.error('Form validation failed:', error)
 		message.error('Có lỗi xảy ra, vui lòng thử lại')
@@ -562,9 +550,8 @@ const handleCancel = () => {
 	formRef.value?.resetFields()
 }
 
-
 const deleteUrl = async (id) => {
-	const url = urls.value.find(u => u.id === id)
+	const url = urls.value.find((u) => u.id === id)
 	if (!url) return
 
 	try {
@@ -617,8 +604,8 @@ const handleBatchDelete = async () => {
 		})
 
 		const results = await Promise.all(deletePromises)
-		const successful = results.filter(r => r.success).length
-		const failed = results.filter(r => !r.success).length
+		const successful = results.filter((r) => r.success).length
+		const failed = results.filter((r) => !r.success).length
 
 		// Remove from local state
 		urls.value = urls.value.filter((url) => !selectedRowKeys.value.includes(url.id))
@@ -633,7 +620,6 @@ const handleBatchDelete = async () => {
 
 		// Reload data to sync with backend
 		await loadUrlsFromAPI()
-
 	} catch (error) {
 		console.error('Batch delete error:', error)
 
@@ -685,7 +671,7 @@ const shareUrl = (url) => {
 	const shareData = {
 		title: 'URL rút gọn',
 		text: 'Chia sẻ URL rút gọn',
-		url: url
+		url: url,
 	}
 
 	if (navigator.share) {
