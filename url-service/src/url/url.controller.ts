@@ -18,6 +18,7 @@ export class UrlController {
 
     @Get(':shortCode')
     async getByShortCode(@Param('shortCode') shortCode: string){
+        console.log('New request to get URL by short code:', shortCode);
         const result = await this.urlService.getUrlByShortCode(shortCode);
         const responseData = {
             short_url_id: result.id, // Giả sử id trong DB là short_url_id
