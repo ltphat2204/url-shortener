@@ -28,7 +28,7 @@
 					<a-card class="stat-card">
 						<a-statistic
 							title="Tổng URL"
-							:value="urls.length"
+							:value="apiMeta.totalItems || urls.length"
 							:value-style="{ color: '#1890ff' }"
 						>
 							<template #prefix>
@@ -41,7 +41,7 @@
 					<a-card class="stat-card">
 						<a-statistic
 							title="URL hoạt động"
-							:value="urls.length"
+							:value="apiMeta.totalItems || urls.length"
 							:value-style="{ color: '#52c41a' }"
 						>
 							<template #prefix>
@@ -92,7 +92,7 @@
 					</a-col>
 					<a-col :span="6">
 						<a-space>
-							<a-button @click="handleRefresh">
+							<a-button @click="handleRefresh" class="refresh-btn">
 								<template #icon>
 									<a-icon type="reload" />
 								</template>
@@ -100,8 +100,9 @@
 							</a-button>
 							<a-button
 								v-if="selectedRowKeys.length > 0"
-								danger
+								type="danger"
 								@click="handleBatchDelete"
+								class="delete-btn"
 							>
 								<template #icon>
 									<a-icon type="delete" />
@@ -121,7 +122,10 @@
 					:columns="columns"
 					:data-source="filteredUrls"
 					:loading="loading"
-					:pagination="pagination"
+					:pagination="{
+						...paginationComputed,
+						showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL (Trang ${paginationComputed.current}/${Math.ceil(paginationComputed.total/paginationComputed.pageSize)})`
+					}"
 					:row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
 					row-key="id"
 					size="middle"
@@ -136,7 +140,11 @@
 						<!-- Custom render cho cột Short URL -->
 						<template v-else-if="column.key === 'shortUrl'">
 							<div class="url-cell">
-								<a :href="record.shortUrl" target="_blank" class="short-url-link">
+								<a
+									:href="record.shortUrl"
+									target="_blank"
+									class="short-url-link"
+								>
 									{{ record.shortUrl }}
 								</a>
 								<a-tooltip title="Sao chép">
@@ -144,28 +152,10 @@
 										type="text"
 										size="small"
 										@click="copyToClipboard(record.shortUrl)"
+										class="copy-btn"
 									>
 										<template #icon>
-											<svg
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-											>
-												<rect
-													x="9"
-													y="9"
-													width="13"
-													height="13"
-													rx="2"
-													ry="2"
-												/>
-												<path
-													d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-												/>
-											</svg>
+											<a-icon type="copy" />
 										</template>
 									</a-button>
 								</a-tooltip>
@@ -195,92 +185,35 @@
 
 						<!-- Custom render cho cột Actions -->
 						<template v-else-if="column.key === 'actions'">
-							<a-space>
-								<a-tooltip title="Chỉnh sửa">
-									<a-button type="primary" size="small" @click="editUrl(record)">
-										<template #icon>
-											<svg
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-											>
-												<path
-													d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-												/>
-												<path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-											</svg>
-										</template>
-									</a-button>
-								</a-tooltip>
+							<a-space size="small">
 								<a-popconfirm
-									title="Bạn có chắc muốn xóa URL này?"
-									ok-text="Xóa"
-									cancel-text="Hủy"
+									title="Bạn có chắc chắn muốn xóa URL này?"
+									ok-text="Có"
+									cancel-text="Không"
 									@confirm="deleteUrl(record.id)"
 								>
 									<a-tooltip title="Xóa">
-										<a-button type="primary" danger size="small">
+										<a-button
+											type="danger"
+											size="small"
+											class="action-btn delete-btn"
+										>
 											<template #icon>
-												<svg
-													width="14"
-													height="14"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-												>
-													<polyline points="3,6 5,6 21,6" />
-													<path
-														d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-													/>
-													<line x1="10" y1="11" x2="10" y2="17" />
-													<line x1="14" y1="11" x2="14" y2="17" />
-												</svg>
+												<DeleteOutlined />
 											</template>
 										</a-button>
 									</a-tooltip>
 								</a-popconfirm>
 								<a-dropdown>
-									<a-tooltip title="Thêm tùy chọn">
-										<a-button size="small">
-											<template #icon>
-												<svg
-													width="14"
-													height="14"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-												>
-													<circle cx="12" cy="12" r="1" />
-													<circle cx="19" cy="12" r="1" />
-													<circle cx="5" cy="12" r="1" />
-												</svg>
-											</template>
-										</a-button>
-									</a-tooltip>
+									<a-button size="small" class="action-btn more-btn">
+										<template #icon>
+											<MoreOutlined />
+										</template>
+									</a-button>
 									<template #overlay>
 										<a-menu>
-											<a-menu-item @click="shareUrl(record)">
-												<svg
-													width="14"
-													height="14"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-													style="margin-right: 8px; display: inline"
-												>
-													<path
-														d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-													/>
-													<path
-														d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-													/>
-												</svg>
+											<a-menu-item @click="shareUrl(record.shortUrl)">
+												<ShareAltOutlined style="margin-right: 8px;" />
 												Chia sẻ
 											</a-menu-item>
 										</a-menu>
@@ -317,19 +250,6 @@
 					</a-input>
 				</a-form-item>
 
-				<a-form-item label="URL ngắn tùy chỉnh (tùy chọn)" name="customShort">
-					<a-input
-						v-model:value="form.customShort"
-						placeholder="Tùy chỉnh phần sau (VD: my-link)"
-						size="large"
-						:addon-before="baseUrl"
-					>
-						<template #prefix>
-							<a-icon type="edit" />
-						</template>
-					</a-input>
-				</a-form-item>
-
 				<a-form-item label="Mô tả (tùy chọn)" name="description">
 					<a-textarea
 						v-model:value="form.description"
@@ -347,6 +267,12 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
+import {
+	DeleteOutlined,
+	MoreOutlined,
+	ShareAltOutlined
+} from '@ant-design/icons-vue'
+import UrlService from '../services/urlService.js'
 
 const emit = defineEmits(['urlAdded', 'urlUpdated', 'urlDeleted'])
 
@@ -359,16 +285,22 @@ const searchText = ref('')
 const sortBy = ref('createdAt')
 const sortOrder = ref('desc')
 const selectedRowKeys = ref([])
+const apiMeta = ref({
+	totalItems: 0,
+	itemsPerPage: 10,
+	currentPage: 1,
+	totalPages: 0,
+})
 
 const form = ref({
 	originalUrl: '',
-	customShort: '',
 	description: '',
 })
 
 const formRef = ref()
 
-const baseUrl = 'https://url-shortener.vn/'
+const baseUrl = 'http://localhost/r/'
+const CURRENT_USER_ID = 1
 
 const rules = {
 	originalUrl: [
@@ -376,12 +308,6 @@ const rules = {
 		{
 			pattern: /^https?:\/\/.+/,
 			message: 'URL phải bắt đầu bằng http:// hoặc https://',
-		},
-	],
-	customShort: [
-		{
-			pattern: /^[a-zA-Z0-9\-_]+$/,
-			message: 'Chỉ được sử dụng chữ cái, số, dấu gạch ngang và gạch dưới',
 		},
 	],
 }
@@ -433,44 +359,96 @@ const pagination = ref({
 	showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 })
 
-const filteredUrls = computed(() => {
-	let result = [...urls.value]
+const displayUrls = computed(() => {
+	return urls.value
+})
 
+const filteredUrls = computed(() => {
+	let result = [...displayUrls.value]
+
+	// Apply search filter
 	if (searchText.value) {
 		const search = searchText.value.toLowerCase()
-		result = result.filter(
-			(url) =>
-				url.shortUrl.toLowerCase().includes(search) ||
-				url.originalUrl.toLowerCase().includes(search),
+		result = result.filter(url =>
+			url.shortUrl.toLowerCase().includes(search) ||
+			url.originalUrl.toLowerCase().includes(search) ||
+			(url.description && url.description.toLowerCase().includes(search))
 		)
 	}
 
-	result.sort((a, b) => {
-		let aVal = a[sortBy.value]
-		let bVal = b[sortBy.value]
+	// Apply sorting
+	if (sortBy.value && sortOrder.value) {
+		result.sort((a, b) => {
+			let aVal, bVal
 
-		if (sortBy.value === 'createdAt') {
-			aVal = new Date(aVal)
-			bVal = new Date(bVal)
-		}
+			if (sortBy.value === 'createdAt') {
+				aVal = new Date(a.createdAt).getTime()
+				bVal = new Date(b.createdAt).getTime()
+			} else if (sortBy.value === 'shortUrl') {
+				aVal = a.shortUrl.toLowerCase()
+				bVal = b.shortUrl.toLowerCase()
+			} else {
+				return 0
+			}
 
-		if (sortOrder.value === 'asc') {
-			return aVal > bVal ? 1 : -1
-		} else {
-			return aVal < bVal ? 1 : -1
-		}
-	})
+			if (sortOrder.value === 'asc') {
+				return aVal > bVal ? 1 : -1
+			} else {
+				return aVal < bVal ? 1 : -1
+			}
+		})
+	}
 
 	return result
 })
 
+// Computed để cập nhật pagination dựa trên filtered data
+const paginationComputed = computed(() => {
+	return {
+		...pagination.value,
+		total: filteredUrls.value.length
+	}
+})
+
 watch(
-	filteredUrls,
-	(newUrls) => {
-		pagination.value.total = newUrls.length
+	[() => pagination.value.pageSize],
+	() => {
+		// Chỉ reload khi thay đổi page size, không reload khi thay đổi current page
+		loadUrlsFromAPI()
 	},
-	{ immediate: true },
 )
+
+const loadUrlsFromAPI = async () => {
+	try {
+		loading.value = true
+
+		const apiResponse = await UrlService.getUrlsByUserId(CURRENT_USER_ID)
+
+		// Xử lý response theo cấu trúc APIResponse mới
+		if (apiResponse.data) {
+			// Map dữ liệu từ backend format sang frontend format
+			urls.value = apiResponse.data.map(url => UrlService.mapBackendUrlToFrontend(url))
+
+			// Cập nhật metadata cho pagination từ API response
+			if (apiResponse.meta) {
+				apiMeta.value = apiResponse.meta
+				pagination.value.total = apiResponse.meta.totalItems
+				pagination.value.current = apiResponse.meta.currentPage
+				pagination.value.pageSize = apiResponse.meta.itemsPerPage
+			}
+		} else {
+			urls.value = []
+			pagination.value.total = 0
+		}
+
+	} catch (error) {
+		console.error('Error loading URLs:', error)
+		message.error('Không thể tải danh sách URL. Đang sử dụng dữ liệu offline.')
+		loadMockData()
+	} finally {
+		loading.value = false
+	}
+}
 
 const loadMockData = () => {
 	const savedUrls = localStorage.getItem('userUrls')
@@ -502,6 +480,8 @@ const loadMockData = () => {
 		]
 		saveToStorage()
 	}
+	// Cập nhật pagination cho mock data
+	pagination.value.total = urls.value.length
 }
 
 const saveToStorage = () => {
@@ -522,43 +502,51 @@ const handleSubmit = async () => {
 		await formRef.value.validate()
 		submitLoading.value = true
 
-		await new Promise((resolve) => setTimeout(resolve, 1000))
-
 		if (editTarget.value) {
-			const index = urls.value.findIndex((u) => u.id === editTarget.value.id)
-			if (index !== -1) {
-				urls.value[index] = {
-					...urls.value[index],
-					originalUrl: form.value.originalUrl,
-					description: form.value.description,
-				}
-
-				if (form.value.customShort) {
-					urls.value[index].shortUrl = baseUrl + form.value.customShort
-				}
-
-				message.success('Cập nhật URL thành công!')
-				emit('urlUpdated', urls.value[index])
-			}
+			// Update existing URL - chưa implement vì backend chưa có API update
+			message.warning('Chức năng cập nhật đang được phát triển')
 		} else {
-			const shortCode = form.value.customShort || generateShortCode()
-			const newUrl = {
-				id: Date.now(),
-				shortUrl: baseUrl + shortCode,
-				originalUrl: form.value.originalUrl,
-				description: form.value.description || '',
-				createdAt: new Date().toISOString(),
-			}
+			// Create new URL
+			try {
+				const urlData = UrlService.mapFrontendFormToBackend(form.value, CURRENT_USER_ID)
+				// console.log('Sending URL data:', urlData)
 
-			urls.value.unshift(newUrl)
-			message.success('Thêm URL thành công!')
-			emit('urlAdded', newUrl)
+				await UrlService.createUrl(urlData)
+				// console.log('API Response:', response)
+
+				message.success('Thêm URL thành công!')
+				emit('urlAdded')
+
+				// Reload data from API
+				await loadUrlsFromAPI()
+
+			} catch (apiError) {
+				console.error('API Error:', apiError)
+				message.error(`Lỗi API: ${apiError.message}`)
+
+				// Fallback to local creation
+				const shortCode = generateShortCode()
+				const newUrl = {
+					id: Date.now(),
+					shortUrl: baseUrl + shortCode,
+					originalUrl: form.value.originalUrl,
+					description: form.value.description || '',
+					createdAt: new Date().toISOString(),
+					shortCode: shortCode
+				}
+
+				urls.value.unshift(newUrl)
+				message.success('Thêm URL thành công! (Offline mode)')
+				emit('urlAdded', newUrl)
+			}
 		}
 
 		saveToStorage()
 		handleCancel()
+
 	} catch (error) {
 		console.error('Form validation failed:', error)
+		message.error('Có lỗi xảy ra, vui lòng thử lại')
 	} finally {
 		submitLoading.value = false
 	}
@@ -569,37 +557,94 @@ const handleCancel = () => {
 	editTarget.value = null
 	form.value = {
 		originalUrl: '',
-		customShort: '',
 		description: '',
 	}
 	formRef.value?.resetFields()
 }
 
-const editUrl = (url) => {
-	editTarget.value = { ...url }
-	form.value = {
-		originalUrl: url.originalUrl,
-		customShort: url.shortUrl.replace(baseUrl, ''),
-		description: url.description || '',
+
+const deleteUrl = async (id) => {
+	const url = urls.value.find(u => u.id === id)
+	if (!url) return
+
+	try {
+		// Thử xóa qua API trước
+		if (url.shortCode) {
+			await UrlService.deleteUrl(url.shortCode)
+		}
+
+		// Xóa khỏi local state
+		const index = urls.value.findIndex((u) => u.id === id)
+		if (index !== -1) {
+			const deletedUrl = urls.value.splice(index, 1)[0]
+			saveToStorage()
+			message.success('Xóa URL thành công!')
+			emit('urlDeleted', deletedUrl)
+
+			// Reload data to sync with backend
+			await loadUrlsFromAPI()
+		}
+	} catch (error) {
+		console.error('Error deleting URL:', error)
+
+		// Fallback to local delete nếu API fail
+		const index = urls.value.findIndex((u) => u.id === id)
+		if (index !== -1) {
+			const deletedUrl = urls.value.splice(index, 1)[0]
+			saveToStorage()
+			message.success('Xóa URL thành công! (Offline mode)')
+			emit('urlDeleted', deletedUrl)
+		}
 	}
-	showAddModal.value = true
 }
 
-const deleteUrl = (id) => {
-	const index = urls.value.findIndex((u) => u.id === id)
-	if (index !== -1) {
-		const deletedUrl = urls.value.splice(index, 1)[0]
+const handleBatchDelete = async () => {
+	try {
+		loading.value = true
+		const selectedUrls = urls.value.filter((url) => selectedRowKeys.value.includes(url.id))
+
+		// Try to delete through API first
+		const deletePromises = selectedUrls.map(async (url) => {
+			try {
+				if (url.shortCode) {
+					await UrlService.deleteUrl(url.shortCode)
+				}
+				return { success: true, url }
+			} catch (error) {
+				console.error(`Failed to delete ${url.shortCode}:`, error)
+				return { success: false, url }
+			}
+		})
+
+		const results = await Promise.all(deletePromises)
+		const successful = results.filter(r => r.success).length
+		const failed = results.filter(r => !r.success).length
+
+		// Remove from local state
+		urls.value = urls.value.filter((url) => !selectedRowKeys.value.includes(url.id))
+		selectedRowKeys.value = []
 		saveToStorage()
-		message.success('Xóa URL thành công!')
-		emit('urlDeleted', deletedUrl)
-	}
-}
 
-const handleBatchDelete = () => {
-	urls.value = urls.value.filter((url) => !selectedRowKeys.value.includes(url.id))
-	selectedRowKeys.value = []
-	saveToStorage()
-	message.success('Xóa các URL đã chọn thành công!')
+		if (failed === 0) {
+			message.success(`Xóa thành công ${successful} URL!`)
+		} else {
+			message.warning(`Xóa thành công ${successful} URL, thất bại ${failed} URL`)
+		}
+
+		// Reload data to sync with backend
+		await loadUrlsFromAPI()
+
+	} catch (error) {
+		console.error('Batch delete error:', error)
+
+		// Fallback to local delete
+		urls.value = urls.value.filter((url) => !selectedRowKeys.value.includes(url.id))
+		selectedRowKeys.value = []
+		saveToStorage()
+		message.success('Xóa các URL đã chọn thành công! (Offline mode)')
+	} finally {
+		loading.value = false
+	}
 }
 
 const onSelectChange = (selectedKeys) => {
@@ -607,46 +652,46 @@ const onSelectChange = (selectedKeys) => {
 }
 
 const handleSearch = () => {
+	// Reset về trang 1 khi search
 	pagination.value.current = 1
 }
 
 const handleSort = () => {
+	// Reset về trang 1 khi sort
 	pagination.value.current = 1
 }
 
-const handleRefresh = () => {
-	loading.value = true
-	setTimeout(() => {
-		loadMockData()
-		loading.value = false
-		message.success('Đã làm mới dữ liệu!')
-	}, 500)
+const handleRefresh = async () => {
+	await loadUrlsFromAPI()
+	message.success('Đã làm mới dữ liệu!')
 }
 
 const handleTableChange = (pag) => {
-	pagination.value = { ...pagination.value, ...pag }
+	pagination.value.current = pag.current
+	pagination.value.pageSize = pag.pageSize
 }
 
 const copyToClipboard = async (text) => {
 	try {
 		await navigator.clipboard.writeText(text)
 		message.success('Đã sao chép vào clipboard!')
-	} catch {
-		message.error('Không thể sao chép!')
+	} catch (error) {
+		console.error('Failed to copy:', error)
+		message.error('Không thể sao chép')
 	}
 }
 
 const shareUrl = (url) => {
 	const shareData = {
-		title: 'Chia sẻ liên kết',
-		text: url.description || 'Liên kết rút gọn',
-		url: url.shortUrl,
+		title: 'URL rút gọn',
+		text: 'Chia sẻ URL rút gọn',
+		url: url
 	}
 
 	if (navigator.share) {
 		navigator.share(shareData)
 	} else {
-		copyToClipboard(url.shortUrl)
+		copyToClipboard(url)
 	}
 }
 
@@ -665,9 +710,10 @@ const truncateUrl = (url, maxLength) => {
 }
 
 onMounted(() => {
-	loadMockData()
+	loadUrlsFromAPI()
 })
 
+// Watch for search text changes to reset pagination
 watch(searchText, () => {
 	pagination.value.current = 1
 })
@@ -676,9 +722,9 @@ watch(searchText, () => {
 <style scoped>
 .url-manager-container {
 	padding: 24px;
-	padding-top: 118px; /* Thêm padding-top để tránh header fixed */
+	padding-top: 118px;
 	background: #f0f2f5;
-	min-height: calc(100vh - 94px); /* Updated to match new header height */
+	min-height: calc(100vh - 94px);
 }
 
 .header-section {
@@ -786,6 +832,81 @@ watch(searchText, () => {
 
 .url-form {
 	margin-top: 16px;
+}
+
+/* Fix for action buttons */
+.action-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+}
+
+.edit-btn {
+	background-color: #1890ff;
+	border-color: #1890ff;
+	color: white;
+}
+
+.edit-btn:hover,
+.edit-btn:focus {
+	background-color: #40a9ff;
+	border-color: #40a9ff;
+	color: white;
+}
+
+.delete-btn {
+	background-color: #ff4d4f;
+	border-color: #ff4d4f;
+	color: white;
+}
+
+.delete-btn:hover,
+.delete-btn:focus {
+	background-color: #ff7875;
+	border-color: #ff7875;
+	color: white;
+}
+
+.more-btn {
+	border-color: #d9d9d9;
+	color: #666;
+}
+
+.more-btn:hover,
+.more-btn:focus {
+	border-color: #1890ff;
+	color: #1890ff;
+}
+
+.copy-btn {
+	color: #666;
+	padding: 4px;
+}
+
+.copy-btn:hover {
+	color: #1890ff;
+	background-color: #f0f8ff;
+}
+
+.refresh-btn {
+	color: #666;
+}
+
+.refresh-btn:hover {
+	color: #1890ff;
+	border-color: #1890ff;
+}
+
+/* Ensure icons are properly colored */
+:deep(.anticon) {
+	color: inherit !important;
+}
+
+/* Action button spacing */
+:deep(.ant-space-item) {
+	display: flex;
+	align-items: center;
 }
 
 @media (max-width: 768px) {
