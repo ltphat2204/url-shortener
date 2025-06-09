@@ -13,9 +13,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - my-microservices-net
+      - url-shortener-net
   
 networks:
-  my-microservices-net:
+  url-shortener-net:
     external: true
-    name: my-microservices-net
+    name: url-shortener-net

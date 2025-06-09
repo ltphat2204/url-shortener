@@ -7,7 +7,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-       - my-microservices-net
+       - url-shortener-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)" 
@@ -23,7 +23,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-       - my-microservices-net
+       - url-shortener-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)" 
@@ -34,7 +34,7 @@ services:
   redis:
     image: "redis:alpine"
     networks:
-      - my-microservices-net
+      - url-shortener-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -43,5 +43,5 @@ services:
       start_period: 5s
 
 networks:
-  my-microservices-net: 
+  url-shortener-net: 
     external: true
