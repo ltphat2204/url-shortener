@@ -9,7 +9,7 @@ services:
       mongodb:
         condition: service_healthy
     networks:
-      - my-microservices-net
+      - url-shortener-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.url-service.rule=Host(`localhost`) && PathPrefix(`/url`)"
@@ -20,7 +20,7 @@ services:
     image: mongo:latest
     container_name: mongodb
     networks:
-      - my-microservices-net
+      - url-shortener-net
     volumes:
       - mongodb_data:/data/db
     command: ["--replSet", "rs0", "--bind_ip_all"]
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
     restart: "no"
     networks:
-      - my-microservices-net
+      - url-shortener-net
     command: >
       mongosh --host mongodb:27017 --eval
       '
@@ -82,5 +82,5 @@ volumes:
   mongodb_data:
 
 networks:
-  my-microservices-net:
+  url-shortener-net:
     external: true

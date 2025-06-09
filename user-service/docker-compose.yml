@@ -7,7 +7,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - my-microservices-net
+      - url-shortener-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.users-service.rule=Host(`localhost`) && PathPrefix(`/users`)"
@@ -21,7 +21,7 @@ services:
     image: postgres:17-alpine
     restart: always
     networks:
-      - my-microservices-net
+      - url-shortener-net
     environment:
       POSTGRES_DB: users
       POSTGRES_USER: postgres
@@ -39,5 +39,5 @@ volumes:
   postgres-data:
 
 networks:
-  my-microservices-net:
+  url-shortener-net:
     external: true
