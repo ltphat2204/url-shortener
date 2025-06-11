@@ -16,7 +16,6 @@ We have to build a URL shortener service that allows users to create short URLs,
 ## Setup
 1. Clone the repository: `git clone https://github.com/ltphat2204/url-shortener.git`
 2. Navigate to a service directory (e.g., `cd frontend`) and follow its README.
-3. Use `docker-compose.yml` for local development: `docker-compose up`.
 
 > **Note**: For production, each service should be deployed independently, and the API Gateway should be configured to route requests to the appropriate services. See [setup.md](docs/setup.md) for detailed instructions.
 
