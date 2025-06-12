@@ -2,7 +2,7 @@ services:
   redirect-service:
     build: .
     env_file:
-      - .env
+      - .env.production
     depends_on:
       redis:
         condition: service_healthy
@@ -28,4 +28,5 @@ services:
 
 networks:
   url-shortener-net: 
-    external: true
+    attachable: true
+    name: url-shortener-net

@@ -30,28 +30,28 @@ endif
 help:
 	@echo "Usage: make [target]"
 	@echo ""
-	@echo "--------------------"
-	@echo "  Go Service       "
-	@echo "--------------------"
-	@echo "  run          Start the Go service (ensures Redis is running first)."
-	@echo "  build        Build the Go binary ('$(BINARY_NAME)')."
-	@echo "  test         Run all Go tests."
-	@echo "  tidy         Tidy and verify Go module dependencies."
-	@echo "  lint         Run the static analysis linter (requires golangci-lint)."
+	@echo "--------------------------"
+	@echo "  Development & Building "
+	@echo "--------------------------"
+	@echo "  run           Run the Go service locally (not in Docker)."
+	@echo "  build         Build the Go binary locally."
+	@echo "  test          Run all Go tests."
+	@echo "  tidy          Tidy and verify Go module dependencies."
+	@echo "  lint          Run the static analysis linter."
 	@echo ""
-	@echo "--------------------"
-	@echo "  Dependencies     "
-	@echo "--------------------"
-	@echo "  redis        Start the Redis container in the background."
-	@echo "  redis-stop   Stop and remove the Redis container."
-	@echo "  redis-logs   View the live logs of the Redis container."
+	@echo "--------------------------"
+	@echo "  Docker Environment     "
+	@echo "--------------------------"
+	@echo "  up            Start all services in the background using Docker Compose."
+	@echo "  down          Stop and remove all Docker Compose services and networks."
+	@echo "  logs          Follow the logs of all running services."
+	@echo "  rebuild       Force a rebuild of the Docker images and restart services."
 	@echo ""
-	@echo "--------------------"
-	@echo "  Housekeeping     "
-	@echo "--------------------"
-	@echo "  stop         Stop all services (currently just Redis)."
-	@echo "  clean        Stop Redis and remove the built Go binary."
-	@echo "  help         Show this help message."
+	@echo "--------------------------"
+	@echo "  Housekeeping           "
+	@echo "--------------------------"
+	@echo "  clean         Run 'make down' and remove the locally built binary."
+	@echo "  help          Show this help message."
 
 
 # ====================================================================================
@@ -117,6 +117,31 @@ redis-logs:
 	@echo "==> Tailing logs for '$(REDIS_CONTAINER_NAME)'. Press Ctrl+C to exit."
 	@docker logs -f $(REDIS_CONTAINER_NAME)
 
+# ====================================================================================
+# DOCKER ENVIRONMENT (using Docker Compose)
+# ====================================================================================
+
+.PHONY: up down logs rebuild
+
+## up: Start all services defined in docker-compose.yml in detached mode.
+up:
+	@echo "==> Starting all services with Docker Compose..."
+	@docker compose up -d
+
+## down: Stop and remove all containers, networks, and volumes.
+down:
+	@echo "==> Stopping and removing all services, networks, and volumes..."
+	@docker compose down -v --remove-orphans
+
+## logs: Follow the logs of all running Docker Compose services.
+logs:
+	@echo "==> Tailing logs for all services. Press Ctrl+C to exit."
+	@docker compose logs -f
+
+## rebuild: Rebuild the Docker image and restart the services.
+rebuild:
+	@echo "==> Rebuilding and restarting all services..."
+	@docker compose up -d --build --force-recreate
 
 # ====================================================================================
 # HOUSEKEEPING
