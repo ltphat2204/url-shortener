@@ -1,4 +1,3 @@
-# README.md
 # URL Redirect Service
 
 A microservice for handling URL redirects by fetching destination URLs from another service, with a Redis caching layer for performance.
