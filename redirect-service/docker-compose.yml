@@ -1,24 +1,8 @@
 services:
-  redirect-service1:
+  redirect-service:
     build: .
     env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-       - url-shortener-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.redirect-service.rule=Host(`localhost`) && PathPrefix(`/r`)" 
-      - "traefik.http.routers.redirect-service.entrypoints=web"
-      - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
-      - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
-      - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
-  redirect-service2:
-    build: .
-    env_file:
-      - .env
+      - .env.production
     depends_on:
       redis:
         condition: service_healthy
@@ -44,4 +28,5 @@ services:
 
 networks:
   url-shortener-net: 
-    external: true
+    attachable: true
+    name: url-shortener-net
