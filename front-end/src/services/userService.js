@@ -1,3 +1,5 @@
+import { mockUsers, addMockUser } from '../mock/mockUsers.js'
+
 const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
 
 export class UserService {
@@ -114,6 +116,90 @@ export class UserService {
 		}
 
 		return await response.json()
+	}
+
+	/**
+	 * Mock user management methods
+	 */
+
+	/**
+	 * Check if email already exists in mock users
+	 * @param {string} email - Email to check
+	 * @returns {boolean} Whether email exists
+	 */
+	static emailExists(email) {
+		return mockUsers.some((user) => user.email === email)
+	}
+
+	/**
+	 * Create new mock user
+	 * @param {Object} userData - User data
+	 * @returns {Object} Created user
+	 */
+	static createMockUser(userData) {
+		const newUser = {
+			username: userData.username || userData.email?.split('@')[0] || '',
+			email: userData.email,
+			password: userData.password || '',
+			name: userData.name || userData.fullName,
+			picture: userData.picture,
+			google_id: userData.google_id,
+		}
+
+		addMockUser(newUser)
+		return newUser
+	}
+
+	/**
+	 * Find mock user by email
+	 * @param {string} email - Email to search
+	 * @returns {Object|null} Found user or null
+	 */
+	static findMockUserByEmail(email) {
+		return mockUsers.find((user) => user.email === email) || null
+	}
+
+	/**
+	 * Verify mock user credentials
+	 * @param {string} email - User email
+	 * @param {string} password - User password
+	 * @returns {Object|null} User if valid, null if invalid
+	 */
+	static verifyMockCredentials(email, password) {
+		const user = this.findMockUserByEmail(email)
+		if (user && user.password === password) {
+			// Don't return password in response
+			// eslint-disable-next-line no-unused-vars
+			const { password: _, ...userWithoutPassword } = user
+			return userWithoutPassword
+		}
+		return null
+	}
+
+	/**
+	 * Create user from Google auth data
+	 * @param {Object} googleData - Google authentication data
+	 * @returns {Object} Created user
+	 */
+	static createUserFromGoogle(googleData) {
+		return this.createMockUser({
+			username: googleData.username,
+			email: googleData.email,
+			name: googleData.name,
+			picture: googleData.picture,
+			google_id: googleData.google_id,
+			password: '', // No password for Google users
+		})
+	}
+
+	/**
+	 * Check if mock user is Google user
+	 * @param {string} email - User email
+	 * @returns {boolean} Whether user is Google user
+	 */
+	static isMockGoogleUser(email) {
+		const user = this.findMockUserByEmail(email)
+		return !!(user && user.google_id)
 	}
 }
 

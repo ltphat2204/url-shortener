@@ -9,13 +9,13 @@
 
 				<!-- Step 1: Registration Form -->
 				<div v-if="currentStep === 1">
-					<form @submit.prevent="handleSignUp" class="auth-form">
+					<form @submit.prevent="onSubmitSignUp" class="auth-form">
 						<div class="form-group">
 							<label for="fullName">Họ và tên</label>
 							<input
 								type="text"
 								id="fullName"
-								v-model="form.fullName"
+								v-model="signUpForm.fullName"
 								:class="{ error: errors.fullName }"
 								placeholder="Nhập họ và tên"
 								required
@@ -30,7 +30,7 @@
 							<input
 								type="email"
 								id="email"
-								v-model="form.email"
+								v-model="signUpForm.email"
 								:class="{ error: errors.email }"
 								placeholder="Nhập email của bạn"
 								required
@@ -46,7 +46,7 @@
 								<input
 									:type="showPassword ? 'text' : 'password'"
 									id="password"
-									v-model="form.password"
+									v-model="signUpForm.password"
 									:class="{ error: errors.password }"
 									placeholder="Nhập mật khẩu"
 									required
@@ -103,7 +103,7 @@
 								<input
 									:type="showConfirmPassword ? 'text' : 'password'"
 									id="confirmPassword"
-									v-model="form.confirmPassword"
+									v-model="signUpForm.confirmPassword"
 									:class="{ error: errors.confirmPassword }"
 									placeholder="Nhập lại mật khẩu"
 									required
@@ -189,13 +189,12 @@
 								<polyline points="22,6 12,13 2,6" />
 							</svg>
 						</div>
-						<h3>Xác thực email</h3>
-						<p>
-							Chúng tôi đã gửi mã OTP đến email <strong>{{ form.email }}</strong>
-						</p>
+						<h3>Xác thực email</h3>					<p>
+						Chúng tôi đã gửi mã OTP đến email <strong>{{ signUpForm.email }}</strong>
+					</p>
 					</div>
 
-					<form @submit.prevent="verifyOTP" class="otp-form">
+					<form @submit.prevent="onVerifyOTP" class="otp-form">
 						<div class="otp-inputs">
 							<input
 								v-for="(digit, index) in otpDigits"
@@ -206,7 +205,7 @@
 								pattern="[0-9]*"
 								maxlength="1"
 								v-model="otpDigits[index]"
-								@input="handleOTPInput($event, index)"
+								@input="handleOTPInputWithAutoSubmit($event, index)"
 								@keydown="handleOTPKeydown($event, index)"
 								class="otp-input"
 								autocomplete="one-time-code"
@@ -229,7 +228,7 @@
 						<p v-if="!canResendOTP">Gửi lại mã sau {{ resendCountdown }}s</p>
 						<button
 							v-else
-							@click="resendOTP"
+							@click="onResendOTP"
 							:disabled="resendLoading"
 							class="btn-link"
 						>
@@ -280,294 +279,71 @@
 	</main>
 </template>
 
-<script>
-import { mockUsers, addMockUser } from '../mock/mockUsers.js'
-import emailjs from 'emailjs-com'
+<script setup>
 import GoogleAuthButton from './GoogleAuthButton.vue'
+import { useAuthentication } from '../composables/useAuthentication.js'
+import { useOTPVerification } from '../composables/useOTPVerification.js'
 
-export default {
-	name: 'SignUp',
-	components: {
-		GoogleAuthButton,
-	},
-	data() {
-		return {
-			currentStep: 1, // 1: Form, 2: OTP, 3: Success
-			form: {
-				fullName: '',
-				email: '',
-				password: '',
-				confirmPassword: '',
-			},
-			errors: {},
-			loading: false,
-			showPassword: false,
-			showConfirmPassword: false,
+// Use composables
+const {
+	signUpForm,
+	currentStep,
+	loading,
+	errors,
+	showPassword,
+	showConfirmPassword,
+	handleSignUp,
+	handleOTPVerification,
+	handleGoogleAuth,
+	handleResendOTP,
+	goBackToForm,
+} = useAuthentication()
 
-			// OTP related
-			otpDigits: ['', '', '', '', '', ''],
-			otpRefs: [],
-			resendCountdown: 60,
-			canResendOTP: false,
-			resendLoading: false,
-			otpTimer: null,
+const {
+	otpDigits,
+	otpRefs,
+	isOTPComplete,
+	resendCountdown,
+	canResendOTP,
+	resendLoading,
+	handleOTPInput,
+	handleOTPKeydown,
+} = useOTPVerification()
 
-			// Thêm biến để lưu mã OTP đã sinh
-			generatedOTP: '',
-		}
-	},
-	computed: {
-		isOTPComplete() {
-			return this.otpDigits.every((digit) => digit !== '')
-		},
-		otpCode() {
-			return this.otpDigits.join('')
-		},
-	},
-	methods: {
-		async handleSignUp() {
-			this.errors = {}
-			this.loading = true
-			try {
-				if (!this.validateForm()) {
-					this.loading = false
-					return
-				}
-				const existed = mockUsers.find((u) => u.email === this.form.email)
-				if (existed) {
-					this.errors.email = 'Email đã tồn tại'
-					this.loading = false
-					return
-				}
-				const otp = Math.floor(100000 + Math.random() * 900000).toString()
-				this.generatedOTP = otp
-				await emailjs.send(
-					import.meta.env.VITE_EMAILJS_SERVICE_ID,
-					import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-					{
-						email: this.form.email,
-						otp: otp,
-						to_name: this.form.fullName || this.form.email,
-					},
-					import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-				)
-				this.currentStep = 2
-				this.startOTPCountdown()
-			} catch {
-				this.errors.general = 'Có lỗi xảy ra, vui lòng thử lại'
-			} finally {
-				this.loading = false
-			}
-		},
+// Handle OTP auto-submit when complete
+const handleOTPInputWithAutoSubmit = (event, index) => {
+	handleOTPInput(event, index)
+	// Auto-submit when OTP is complete
+	if (isOTPComplete.value) {
+		setTimeout(() => {
+			handleOTPVerification()
+		}, 100)
+	}
+}
 
-		async verifyOTP() {
-			this.errors = {}
-			this.loading = true
-			try {
-				if (this.otpCode === this.generatedOTP) {
-					addMockUser({
-						username: this.form.email.split('@')[0],
-						email: this.form.email,
-						password: this.form.password,
-						name: this.form.fullName,
-					})
-					this.currentStep = 3
-					this.stopOTPCountdown()
-				} else {
-					this.errors.otp = 'Mã OTP không hợp lệ'
-				}
-			} catch {
-				this.errors.otp = 'Có lỗi xảy ra, vui lòng thử lại'
-			} finally {
-				this.loading = false
-			}
-		},
+// Wrapper for signup form submission
+const onSubmitSignUp = async () => {
+	await handleSignUp()
+}
 
-		async resendOTP() {
-			this.resendLoading = true
+// Wrapper for OTP verification
+const onVerifyOTP = async () => {
+	await handleOTPVerification()
+}
 
-			try {
-				const response = await this.$api.auth.resendOTP({
-					email: this.form.email,
-				})
+// Wrapper for resend OTP
+const onResendOTP = async () => {
+	resendLoading.value = true
+	try {
+		await handleResendOTP()
+	} finally {
+		resendLoading.value = false
+	}
+}
 
-				if (response.success) {
-					this.$toast.success('Mã OTP mới đã được gửi!')
-					this.otpDigits = ['', '', '', '', '', '']
-					this.startOTPCountdown()
-				} else {
-					this.$toast.error('Không thể gửi lại mã OTP')
-				}
-			} catch {
-				this.$toast.error('Có lỗi xảy ra khi gửi lại mã OTP')
-			} finally {
-				this.resendLoading = false
-			}
-		},
-
-		validateForm() {
-			let isValid = true
-
-			if (!this.form.fullName.trim()) {
-				this.errors.fullName = 'Họ và tên là bắt buộc'
-				isValid = false
-			} else if (this.form.fullName.trim().length < 2) {
-				this.errors.fullName = 'Họ và tên phải có ít nhất 2 ký tự'
-				isValid = false
-			}
-
-			if (!this.form.email) {
-				this.errors.email = 'Email là bắt buộc'
-				isValid = false
-			} else if (!this.isValidEmail(this.form.email)) {
-				this.errors.email = 'Email không hợp lệ'
-				isValid = false
-			}
-
-			if (!this.form.password) {
-				this.errors.password = 'Mật khẩu là bắt buộc'
-				isValid = false
-			} else if (this.form.password.length < 8) {
-				this.errors.password = 'Mật khẩu phải có ít nhất 8 ký tự'
-				isValid = false
-			} else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(this.form.password)) {
-				this.errors.password = 'Mật khẩu phải chứa chữ hoa, chữ thường và số'
-				isValid = false
-			}
-
-			if (!this.form.confirmPassword) {
-				this.errors.confirmPassword = 'Xác nhận mật khẩu là bắt buộc'
-				isValid = false
-			} else if (this.form.password !== this.form.confirmPassword) {
-				this.errors.confirmPassword = 'Mật khẩu xác nhận không khớp'
-				isValid = false
-			}
-
-			return isValid
-		},
-
-		isValidEmail(email) {
-			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-			return re.test(email)
-		},
-
-		handleOTPInput(event, index) {
-			const value = event.target.value.replace(/[^0-9]/g, '')
-			this.otpDigits[index] = value
-			if (value && index < 5) {
-				this.$nextTick(() => {
-					this.otpRefs[index + 1]?.focus()
-				})
-			}
-			if (this.otpDigits.every((d) => d.length === 1)) {
-				this.verifyOTP()
-			}
-		},
-		handleOTPKeydown(event, index) {
-			if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
-				this.$nextTick(() => {
-					this.otpRefs[index - 1]?.focus()
-				})
-			}
-		},
-
-		startOTPCountdown() {
-			this.resendCountdown = 60
-			this.canResendOTP = false
-
-			this.otpTimer = setInterval(() => {
-				this.resendCountdown--
-				if (this.resendCountdown <= 0) {
-					this.canResendOTP = true
-					this.stopOTPCountdown()
-				}
-			}, 1000)
-		},
-
-		stopOTPCountdown() {
-			if (this.otpTimer) {
-				clearInterval(this.otpTimer)
-				this.otpTimer = null
-			}
-		},
-
-		goBackToForm() {
-			this.currentStep = 1
-			this.stopOTPCountdown()
-		},
-
-		goToSignIn() {
-			this.$router.push('/signIn')
-		},
-
-		onGoogleSignUp(credential) {
-			let payload = {}
-			try {
-				const base64Url = credential.split('.')[1]
-				const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-				const jsonPayload = decodeURIComponent(
-					atob(base64)
-						.split('')
-						.map(function (c) {
-							return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-						})
-						.join(''),
-				)
-
-				payload = JSON.parse(jsonPayload)
-			} catch {
-				this.errors.general = 'Lỗi xử lý thông tin đăng ký Google'
-				return
-			}
-
-			let userName = ''
-			if (payload.name) {
-				userName = payload.name
-			} else if (payload.given_name && payload.family_name) {
-				userName = `${payload.family_name} ${payload.given_name}`.trim()
-			} else if (payload.given_name) {
-				userName = payload.given_name
-			} else {
-				userName = payload.email?.split('@')[0] || 'User'
-			}
-
-			const existed = mockUsers.find((u) => u.email === payload.email)
-			if (existed) {
-				alert('Email này đã được đăng ký. Vui lòng sử dụng tính năng đăng nhập.')
-				this.$router.push('/signIn')
-				return
-			}
-
-			const userObject = {
-				id: payload.sub,
-				username: payload.email?.split('@')[0] || '',
-				email: payload.email,
-				name: userName,
-				picture: payload.picture,
-				google_id: payload.sub,
-				locale: payload.locale || 'vi',
-				verified_email: payload.email_verified || false,
-			}
-
-			addMockUser({
-				username: userObject.username,
-				email: userObject.email,
-				password: '',
-				name: userObject.name,
-				picture: userObject.picture,
-				google_id: userObject.google_id,
-			})
-
-			localStorage.setItem('user', JSON.stringify(userObject))
-			localStorage.setItem('token', credential)
-
-			this.$router.push('/')
-		},
-	},
-
-	beforeUnmount() {
-		this.stopOTPCountdown()
-	},
+// Handle Google Sign Up
+const onGoogleSignUp = async (credential) => {
+	await handleGoogleAuth(credential, true) // true for signup
 }
 </script>
 

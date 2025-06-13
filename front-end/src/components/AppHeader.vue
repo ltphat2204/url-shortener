@@ -184,6 +184,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import AuthService from '../services/authService.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -202,8 +203,7 @@ onUnmounted(() => {
 })
 
 function updateUserState() {
-	const userData = localStorage.getItem('user')
-	user.value = userData ? JSON.parse(userData) : null
+	user.value = AuthService.getCurrentUser()
 }
 
 function goToSignIn() {
@@ -238,12 +238,18 @@ function closeDropdown(event) {
 function handleLogout() {
 	const needsRedirect = route.meta?.requiresAuth
 
-	localStorage.removeItem('token')
-	localStorage.removeItem('user')
+	// Use AuthService to clear session
+	AuthService.clearUserSession()
+
+	// Update local state
 	user.value = null
 	showDropdown.value = false
+
 	if (needsRedirect) {
 		router.push('/')
+	} else {
+		// Force refresh to update all components
+		window.location.reload()
 	}
 }
 </script>
