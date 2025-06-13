@@ -1,112 +1,155 @@
 <template>
-	<div id="google-signup-btn" style="width: 100%; display: flex; justify-content: center"></div>
+	<div>
+		<div v-if="!isConfigured" class="google-auth-warning">
+			<p>Google authentication is not configured.</p>
+			<small>Please set VITE_GOOGLE_CLIENT_ID in your environment variables.</small>
+		</div>
+		<div v-else-if="hasError" class="google-auth-error">
+			<p>Failed to load Google authentication.</p>
+			<button @click="retryLoad" class="retry-button">Try Again</button>
+		</div>
+		<div v-else>
+			<div id="google-signup-btn" style="width: 100%; display: flex; justify-content: center"></div>
+			<div v-if="isLoading" class="google-auth-loading">Loading Google Sign-In...</div>
+		</div>
+	</div>
 </template>
 
-<script>
-export default {
-	name: 'GoogleAuthButton',
-	data() {
-		return {
-			isLoading: true,
-			hasError: false,
-			isConfigured: false,
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import GoogleAuthService from '../services/googleAuthService.js'
+
+// Props
+const props = defineProps({
+	buttonText: {
+		type: String,
+		default: 'signin_with'
+	},
+	theme: {
+		type: String,
+		default: 'outline'
+	},
+	size: {
+		type: String,
+		default: 'large'
+	},
+	width: {
+		type: Number,
+		default: 340
+	}
+})
+
+// Emits
+const emit = defineEmits(['success', 'error'])
+
+// State
+const isLoading = ref(true)
+const hasError = ref(false)
+const isConfigured = ref(false)
+
+onMounted(async () => {
+	await setupGoogleAuth()
+})
+
+onUnmounted(() => {
+	GoogleAuthService.cleanup()
+})
+
+const setupGoogleAuth = async () => {
+	try {
+		isLoading.value = true
+		hasError.value = false
+
+		// Check configuration
+		if (!GoogleAuthService.isConfigured()) {
+			isConfigured.value = false
+			isLoading.value = false
+			return
 		}
-	},
-	mounted() {
-		this.checkConfiguration()
-	},
-	methods: {
-		checkConfiguration() {
-			const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-			if (!clientId || clientId === 'your-google-client-id-here') {
-				this.isConfigured = false
-				this.isLoading = false
-				return
+
+		isConfigured.value = true
+
+		// Setup Google Auth
+		const success = await GoogleAuthService.setupGoogleAuth(
+			'google-signup-btn',
+			onGoogleAuth,
+			{
+				theme: props.theme,
+				size: props.size,
+				text: props.buttonText,
+				width: props.width,
+				locale: 'vi',
 			}
-			this.isConfigured = true
-			this.loadGoogleScript()
-		},
+		)
 
-		loadGoogleScript() {
-			if (!window.google || !window.google.accounts) {
-				const script = document.createElement('script')
-				script.src = 'https://accounts.google.com/gsi/client'
-				script.async = true
-				script.defer = true
-				script.onload = this.renderGoogleButton
-				script.onerror = this.handleScriptError
-				document.head.appendChild(script)
-			} else {
-				this.renderGoogleButton()
-			}
-		},
+		if (success) {
+			isLoading.value = false
+			hasError.value = false
+		} else {
+			throw new Error('Failed to setup Google authentication')
+		}
+	} catch (error) {
+		console.error('Google Auth setup error:', error)
+		isLoading.value = false
+		hasError.value = true
+		emit('error', error)
+	}
+}
 
-		handleScriptError() {
-			this.isLoading = false
-			this.hasError = true
-			console.error('Failed to load Google Identity Services script')
-		},
+const onGoogleAuth = (credential) => {
+	try {
+		emit('success', credential.credential)
+	} catch (error) {
+		console.error('Google Auth callback error:', error)
+		emit('error', error)
+	}
+}
 
-		renderGoogleButton() {
-			try {
-				if (
-					window.google &&
-					window.google.accounts &&
-					document.getElementById('google-signup-btn')
-				) {
-					window.google.accounts.id.initialize({
-						client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-						callback: this.onGoogleSignIn,
-					})
-					window.google.accounts.id.renderButton(
-						document.getElementById('google-signup-btn'),
-						{
-							theme: 'outline',
-							size: 'large',
-							text: 'signin_with',
-							width: 340,
-							locale: 'vi',
-						},
-					)
-					this.isLoading = false
-					this.hasError = false
-				}
-			} catch (error) {
-				console.error('Error rendering Google button:', error)
-				this.handleScriptError()
-			}
-		},
-
-		retryLoad() {
-			this.isLoading = true
-			this.hasError = false
-			this.loadGoogleScript()
-		},
-
-		onGoogleSignIn(response) {
-			try {
-				const credential = response.credential
-				this.$emit('success', credential)
-			} catch (error) {
-				console.error('Google sign-in error:', error)
-				alert('Đăng nhập Google thất bại. Vui lòng thử lại.')
-			}
-		},
-	},
+const retryLoad = async () => {
+	await setupGoogleAuth()
 }
 </script>
+
 <style scoped>
-.google-auth-container {
-	width: 100%;
-	display: flex;
-	justify-content: center;
+.google-auth-warning,
+.google-auth-error {
+	text-align: center;
+	padding: 16px;
+	border-radius: 8px;
 	margin-bottom: 20px;
 }
 
-.google-button-container {
-	width: 100%;
-	display: flex;
-	justify-content: center;
+.google-auth-warning {
+	background-color: #fff3cd;
+	border: 1px solid #ffeaa7;
+	color: #856404;
+}
+
+.google-auth-error {
+	background-color: #f8d7da;
+	border: 1px solid #f5c6cb;
+	color: #721c24;
+}
+
+.google-auth-loading {
+	text-align: center;
+	color: #666;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+.retry-button {
+	background: #667eea;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-top: 8px;
+}
+
+.retry-button:hover {
+	background: #5a67d8;
 }
 
 .google-config-error,

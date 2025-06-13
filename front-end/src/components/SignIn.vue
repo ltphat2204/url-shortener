@@ -6,13 +6,13 @@
 				<p>Chào mừng bạn quay trở lại!</p>
 			</div>
 
-			<form @submit.prevent="handleSignIn" class="auth-form">
+			<form @submit.prevent="onSubmitSignIn" class="auth-form">
 				<div class="form-group">
 					<label for="email">Email</label>
 					<input
 						type="email"
 						id="email"
-						v-model="form.email"
+						v-model="signInForm.email"
 						:class="{ error: errors.email }"
 						placeholder="Nhập email của bạn"
 						required
@@ -26,7 +26,7 @@
 						<input
 							:type="showPassword ? 'text' : 'password'"
 							id="password"
-							v-model="form.password"
+							v-model="signInForm.password"
 							:class="{ error: errors.password }"
 							placeholder="Nhập mật khẩu"
 							required
@@ -99,151 +99,28 @@
 	</div>
 </template>
 
-<script>
-import { mockUsers } from '../mock/mockUsers.js'
+<script setup>
 import GoogleAuthButton from './GoogleAuthButton.vue'
+import { useAuthentication } from '../composables/useAuthentication.js'
 
-export default {
-	name: 'SignIn',
-	components: {
-		GoogleAuthButton,
-	},
-	data() {
-		return {
-			form: {
-				email: '',
-				password: '',
-			},
-			errors: {},
-			loading: false,
-			showPassword: false,
-		}
-	},
-	methods: {
-		async handleSignIn() {
-			this.errors = {}
-			this.loading = true
+// Use authentication composable
+const {
+	signInForm,
+	loading,
+	errors,
+	showPassword,
+	handleSignIn,
+	handleGoogleAuth,
+} = useAuthentication()
 
-			try {
-				if (!this.validateForm()) {
-					this.loading = false
-					return
-				}
+// Handle Google Sign In
+const onGoogleSignIn = async (credential) => {
+	await handleGoogleAuth(credential, false) // false for signin
+}
 
-				const user = mockUsers.find(
-					(u) => u.email === this.form.email || u.username === this.form.email,
-				)
-				if (!user) {
-					this.errors.email = 'Email không tồn tại'
-					this.loading = false
-					return
-				}
-				if (user.password !== this.form.password) {
-					this.errors.password = 'Mật khẩu không đúng'
-					this.loading = false
-					return
-				}
-				localStorage.setItem('token', 'mock-token')
-				localStorage.setItem('user', JSON.stringify(user))
-				this.$router.push('/')
-			} catch {
-				this.errors.general = 'Có lỗi xảy ra, vui lòng thử lại'
-			} finally {
-				this.loading = false
-			}
-		},
-
-		onGoogleSignIn(credential) {
-			let payload = {}
-			try {
-				const base64Url = credential.split('.')[1]
-				const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-				const jsonPayload = decodeURIComponent(
-					atob(base64)
-						.split('')
-						.map(function (c) {
-							return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-						})
-						.join(''),
-				)
-
-				payload = JSON.parse(jsonPayload)
-			} catch {
-				this.errors.general = 'Lỗi xử lý thông tin đăng nhập Google'
-				return
-			}
-
-			let userName = ''
-			if (payload.name) {
-				userName = payload.name
-			} else if (payload.given_name && payload.family_name) {
-				userName = `${payload.family_name} ${payload.given_name}`.trim()
-			} else if (payload.given_name) {
-				userName = payload.given_name
-			} else {
-				userName = payload.email?.split('@')[0] || 'User'
-			}
-
-			const userObject = {
-				id: payload.sub,
-				username: payload.email?.split('@')[0] || '',
-				email: payload.email,
-				name: userName,
-				picture: payload.picture,
-				google_id: payload.sub,
-				locale: payload.locale || 'vi',
-				verified_email: payload.email_verified || false,
-			}
-
-			const existed = mockUsers.find((u) => u.email === payload.email)
-			if (!existed) {
-				mockUsers.push({
-					username: userObject.username,
-					email: userObject.email,
-					password: '',
-					name: userObject.name,
-					picture: userObject.picture,
-					google_id: userObject.google_id,
-				})
-			}
-
-			localStorage.setItem('user', JSON.stringify(userObject))
-			localStorage.setItem('token', credential)
-
-			this.$router.push('/')
-		},
-
-		validateForm() {
-			let isValid = true
-
-			if (!this.form.email) {
-				this.errors.email = 'Email là bắt buộc'
-				isValid = false
-			} else if (!this.isValidEmail(this.form.email)) {
-				this.errors.email = 'Email không hợp lệ'
-				isValid = false
-			}
-
-			if (!this.form.password) {
-				this.errors.password = 'Mật khẩu là bắt buộc'
-				isValid = false
-			} else if (this.form.password.length < 6) {
-				this.errors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
-				isValid = false
-			}
-
-			return isValid
-		},
-
-		isValidEmail(email) {
-			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-			return re.test(email)
-		},
-
-		goToSignUp() {
-			this.$router.push('/signUp')
-		},
-	},
+// Wrapper for form submission
+const onSubmitSignIn = async () => {
+	await handleSignIn()
 }
 </script>
 
