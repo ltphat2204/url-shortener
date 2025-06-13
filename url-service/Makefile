@@ -45,7 +45,6 @@ help:
 	@echo "--------------------------"
 	@echo "  migrate       Create and apply a new database migration via Prisma."
 	@echo "  generate      Regenerate the Prisma Client from your schema."
-	@echo "  studio        Start the Prisma Studio web UI to view/edit data."
 	@echo "  db-push       Push schema changes to the DB without creating migration files."
 	@echo "  format        Format the schema.prisma file."
 	@echo ""
@@ -111,7 +110,7 @@ lint:
 # DATABASE & MIGRATIONS (Prisma)
 # ====================================================================================
 
-.PHONY: migrate generate studio db-push format
+.PHONY: migrate generate db-push format
 
 ## migrate: Ensure DB is running, then create and apply a new migration.
 migrate: mongo
@@ -122,11 +121,6 @@ migrate: mongo
 generate:
 	@echo "==> Generating Prisma Client..."
 	@$(NPM) exec -- prisma generate
-
-## studio: Ensure DB is running, then launch the Prisma Studio UI.
-studio: mongo
-	@echo "==> Starting Prisma Studio..."
-	@$(NPM) exec -- prisma studio
 
 ## db-push: Ensure DB is running, then push the schema to the database.
 db-push: mongo
@@ -143,7 +137,6 @@ format:
 # DOCKER ENVIRONMENT (using Docker Compose)
 # ====================================================================================
 
-# ... (This section remains unchanged) ...
 .PHONY: up down logs rebuild
 
 $(ENV_FILE):
@@ -173,7 +166,6 @@ rebuild:
 # LOCAL DEPENDENCIES (MongoDB for 'make run')
 # ====================================================================================
 
-# ... (This section remains unchanged) ...
 .PHONY: mongo mongo-stop mongo-logs mongo-shell
 
 mongo:
@@ -207,7 +199,6 @@ mongo-shell:
 
 .PHONY: clean
 
-## clean: Stop all environments and remove build artifacts (dist, node_modules).
 clean: down mongo-stop
 	@echo "==> Cleaning up build artifacts..."
 	@$(RM) $(BUILD_DIR) node_modules
