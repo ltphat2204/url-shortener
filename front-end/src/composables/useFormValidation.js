@@ -14,6 +14,19 @@ export function useFormValidation() {
 		return null
 	}
 
+	const validateUsername = (username) => {
+		if (!username?.trim()) {
+			return 'Tên đăng nhập là bắt buộc'
+		}
+		if (username.trim().length < 3) {
+			return 'Tên đăng nhập phải có ít nhất 3 ký tự'
+		}
+		if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+			return 'Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới'
+		}
+		return null
+	}
+
 	const validateEmail = (email) => {
 		if (!email) {
 			return 'Email là bắt buộc'
@@ -55,6 +68,9 @@ export function useFormValidation() {
 		const fullNameError = validateFullName(form.fullName)
 		if (fullNameError) newErrors.fullName = fullNameError
 
+		const usernameError = validateUsername(form.username)
+		if (usernameError) newErrors.username = usernameError
+
 		const emailError = validateEmail(form.email)
 		if (emailError) newErrors.email = emailError
 
@@ -71,8 +87,8 @@ export function useFormValidation() {
 	const validateSignInForm = (form) => {
 		const newErrors = {}
 
-		const emailError = validateEmail(form.email)
-		if (emailError) newErrors.email = emailError
+		const usernameError = validateUsername(form.username)
+		if (usernameError) newErrors.username = usernameError
 
 		if (!form.password) {
 			newErrors.password = 'Mật khẩu là bắt buộc'

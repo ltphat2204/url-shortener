@@ -8,16 +8,17 @@
 
 			<form @submit.prevent="onSubmitSignIn" class="auth-form">
 				<div class="form-group">
-					<label for="email">Email</label>
+					<label for="username">Tên đăng nhập</label>
 					<input
-						type="email"
-						id="email"
-						v-model="signInForm.email"
-						:class="{ error: errors.email }"
-						placeholder="Nhập email của bạn"
+						type="text"
+						id="username"
+						v-model="signInForm.username"
+						:class="{ error: errors.username }"
+						placeholder="Nhập tên đăng nhập"
+						autocomplete="username"
 						required
 					/>
-					<span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+					<span v-if="errors.username" class="error-message">{{ errors.username }}</span>
 				</div>
 
 				<div class="form-group">
@@ -29,6 +30,7 @@
 							v-model="signInForm.password"
 							:class="{ error: errors.password }"
 							placeholder="Nhập mật khẩu"
+							autocomplete="new-password"
 							required
 						/>
 						<button
@@ -201,6 +203,12 @@ const onSubmitSignIn = async () => {
 
 .password-input {
 	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.password-input input {
+	padding-right: 50px; /* Để chỗ cho nút toggle */
 }
 
 .password-toggle {
@@ -211,17 +219,29 @@ const onSubmitSignIn = async () => {
 	background: none;
 	border: none;
 	cursor: pointer;
-	padding: 4px;
+	padding: 8px;
 	color: #666;
 	transition: color 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
 }
 
 .password-toggle:hover {
 	color: #667eea;
+	background-color: rgba(102, 126, 234, 0.1);
+}
+
+.password-toggle:focus {
+	outline: 2px solid #667eea;
+	outline-offset: 2px;
 }
 
 .password-toggle svg {
 	display: block;
+	width: 20px;
+	height: 20px;
 }
 
 .error-message {

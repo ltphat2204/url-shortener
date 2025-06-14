@@ -6,7 +6,7 @@ export class UserService {
 	/**
 	 * Đăng nhập user
 	 * @param {Object} loginData - Dữ liệu đăng nhập
-	 * @param {string} loginData.email - Email
+	 * @param {string} loginData.username - Username (email)
 	 * @param {string} loginData.password - Mật khẩu
 	 * @returns {Promise<Object>} - Token và thông tin user
 	 */
@@ -30,9 +30,9 @@ export class UserService {
 	/**
 	 * Đăng ký user mới
 	 * @param {Object} registerData - Dữ liệu đăng ký
+	 * @param {string} registerData.username - Username
 	 * @param {string} registerData.email - Email
 	 * @param {string} registerData.password - Mật khẩu
-	 * @param {string} registerData.name - Tên user
 	 * @returns {Promise<Object>} - Thông tin user đã tạo
 	 */
 	static async register(registerData) {
@@ -116,6 +116,28 @@ export class UserService {
 		}
 
 		return await response.json()
+	}
+
+	/**
+	 * Validate JWT token
+	 * @param {string} token - JWT token
+	 * @returns {Promise<boolean>} - Token validation result
+	 */
+	static async validateToken(token) {
+		try {
+			const response = await fetch(`${API_BASE_URL}/users/auth/token/validate`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json',
+				},
+			})
+
+			return response.ok
+		} catch (error) {
+			console.error('Token validation error:', error)
+			return false
+		}
 	}
 
 	/**
