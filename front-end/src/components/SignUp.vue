@@ -18,10 +18,27 @@
 								v-model="signUpForm.fullName"
 								:class="{ error: errors.fullName }"
 								placeholder="Nhập họ và tên"
+								autocomplete="name"
 								required
 							/>
 							<span v-if="errors.fullName" class="error-message">{{
 								errors.fullName
+							}}</span>
+						</div>
+
+						<div class="form-group">
+							<label for="username">Tên đăng nhập</label>
+							<input
+								type="text"
+								id="username"
+								v-model="signUpForm.username"
+								:class="{ error: errors.username }"
+								placeholder="Nhập tên đăng nhập"
+								autocomplete="username"
+								required
+							/>
+							<span v-if="errors.username" class="error-message">{{
+								errors.username
 							}}</span>
 						</div>
 
@@ -33,6 +50,7 @@
 								v-model="signUpForm.email"
 								:class="{ error: errors.email }"
 								placeholder="Nhập email của bạn"
+								autocomplete="email"
 								required
 							/>
 							<span v-if="errors.email" class="error-message">{{
@@ -49,6 +67,7 @@
 									v-model="signUpForm.password"
 									:class="{ error: errors.password }"
 									placeholder="Nhập mật khẩu"
+									autocomplete="new-password"
 									required
 								/>
 								<button
@@ -106,6 +125,7 @@
 									v-model="signUpForm.confirmPassword"
 									:class="{ error: errors.confirmPassword }"
 									placeholder="Nhập lại mật khẩu"
+									autocomplete="new-password"
 									required
 								/>
 								<button
@@ -204,7 +224,7 @@
 								inputmode="numeric"
 								pattern="[0-9]*"
 								maxlength="1"
-								v-model="otpDigits[index]"
+								:value="otpDigits[index]"
 								@input="handleOTPInputWithAutoSubmit($event, index)"
 								@keydown="handleOTPKeydown($event, index)"
 								class="otp-input"
@@ -225,7 +245,7 @@
 					</form>
 
 					<div class="otp-footer">
-						<p v-if="!canResendOTP">Gửi lại mã sau {{ resendCountdown }}s</p>
+						<p v-if="!canResendOTP">Gửi lại mã sau <strong>{{ resendCountdown }}</strong>s</p>
 						<button
 							v-else
 							@click="onResendOTP"
@@ -297,6 +317,7 @@ const {
 	handleGoogleAuth,
 	handleResendOTP,
 	goBackToForm,
+	setOTPMethods,
 } = useAuthentication()
 
 const {
@@ -306,19 +327,35 @@ const {
 	resendCountdown,
 	canResendOTP,
 	resendLoading,
-	handleOTPInput,
+	handleOTPInputWithCallback,
 	handleOTPKeydown,
+	setGeneratedOTP,
+	verifyOTP,
+	resetOTP,
+	startOTPCountdown,
+	stopOTPCountdown,
+	setOTPChangeCallback,
 } = useOTPVerification()
+
+// Connect the two composables
+setOTPMethods({
+	setGeneratedOTP,
+	verifyOTP,
+	resetOTP,
+	startOTPCountdown,
+	stopOTPCountdown,
+	setOTPChangeCallback,
+})
 
 // Handle OTP auto-submit when complete
 const handleOTPInputWithAutoSubmit = (event, index) => {
-	handleOTPInput(event, index)
+	handleOTPInputWithCallback(event, index)
 	// Auto-submit when OTP is complete
-	if (isOTPComplete.value) {
-		setTimeout(() => {
+	setTimeout(() => {
+		if (isOTPComplete.value) {
 			handleOTPVerification()
-		}, 100)
-	}
+		}
+	}, 100)
 }
 
 // Wrapper for signup form submission
@@ -435,6 +472,12 @@ const onGoogleSignUp = async (credential) => {
 
 .password-input {
 	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.password-input input {
+	padding-right: 50px; /* Để chỗ cho nút toggle */
 }
 
 .password-toggle {
@@ -445,17 +488,29 @@ const onGoogleSignUp = async (credential) => {
 	background: none;
 	border: none;
 	cursor: pointer;
-	padding: 4px;
+	padding: 8px;
 	color: #666;
 	transition: color 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
 }
 
 .password-toggle:hover {
 	color: #667eea;
+	background-color: rgba(102, 126, 234, 0.1);
+}
+
+.password-toggle:focus {
+	outline: 2px solid #667eea;
+	outline-offset: 2px;
 }
 
 .password-toggle svg {
 	display: block;
+	width: 20px;
+	height: 20px;
 }
 
 .divider {
