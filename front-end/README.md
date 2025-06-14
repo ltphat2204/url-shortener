@@ -1,41 +1,78 @@
-# frontend
+# Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue.js frontend for URL shortening service with user management and analytics.
 
-## Recommended IDE Setup
+## Features
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Shorten URLs with custom aliases
+- User authentication (email/password + Google OAuth)
+- URL management dashboard with analytics
+- Bulk operations
 
-## Customize configuration
+## Tech Stack
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- Vue 3 + Composition API
+- Ant Design Vue
+- Vue Router 4
+- Vite
 
-## Project Setup
+## Setup
 
-```sh
+```bash
+# Install dependencies
 bun install
+
+# Copy environment file
+cp .env.example .env
 ```
 
-### Compile and Hot-Reload for Development
+### Environment Variables
 
-```sh
+```env
+# EmailJS (for OTP verification)
+VITE_EMAILJS_PUBLIC_KEY=your_public_key
+VITE_EMAILJS_PRIVATE_KEY=your_private_key
+VITE_EMAILJS_SERVICE_ID=your_service_id
+VITE_EMAILJS_TEMPLATE_ID=your_template_id
+
+# Google OAuth
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# API
+VITE_API_GATEWAY_BASE_URL=http://localhost
+```
+
+## Development
+
+```bash
+# Start dev server
 bun dev
-```
 
-### Compile and Minify for Production
-
-```sh
+# Build for production
 bun run build
-```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
+# Run tests
 bun test:unit
+
+# Lint code
+bun lint
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## Docker
 
-```sh
-bun lint
+```bash
+docker-compose up
+```
+
+## Project Structure
+
+```
+src/
+├── components/        # Reusable components
+├── composables/       # Vue composition functions
+├── services/          # API calls
+├── views/            # Pages
+├── router/           # Routing config
+└── utils/            # Helper functions
 ```
