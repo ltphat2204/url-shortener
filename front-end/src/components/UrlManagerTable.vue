@@ -3,21 +3,19 @@
 		<!-- Header với nút thêm URL -->
 		<div class="header-section">
 			<div class="header-content">
-				<div class="title-section">
-					<h1 class="page-title">
-						<a-icon type="link" />
-						Quản lý URL
-					</h1>
+				<div class="title-section">				<h1 class="page-title">
+					<LinkOutlined />
+					Quản lý URL
+				</h1>
 					<p class="page-subtitle">
 						Tạo, quản lý và theo dõi các liên kết rút gọn của bạn
 					</p>
-				</div>
-				<a-button type="primary" size="large" @click="showModal" class="add-btn">
-					<template #icon>
-						<a-icon type="plus" />
-					</template>
-					Thêm URL mới
-				</a-button>
+				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
+				<template #icon>
+					<PlusOutlined />
+				</template>
+				Thêm URL mới
+			</a-button>
 			</div>
 		</div>
 
@@ -25,29 +23,27 @@
 		<div class="stats-section">
 			<a-row :gutter="16">
 				<a-col :span="12">
-					<a-card class="stat-card">
-						<a-statistic
-							title="Tổng URL"
-							:value="apiMeta.totalItems || urls.length"
-							:value-style="{ color: '#1890ff' }"
-						>
-							<template #prefix>
-								<a-icon type="link" />
-							</template>
-						</a-statistic>
+					<a-card class="stat-card">					<a-statistic
+						title="Tổng URL"
+						:value="apiMeta.totalItems || urls.length"
+						:value-style="{ color: '#1890ff' }"
+					>
+						<template #prefix>
+							<LinkOutlined />
+						</template>
+					</a-statistic>
 					</a-card>
 				</a-col>
 				<a-col :span="12">
-					<a-card class="stat-card">
-						<a-statistic
-							title="URL hoạt động"
-							:value="apiMeta.totalItems || urls.length"
-							:value-style="{ color: '#52c41a' }"
-						>
-							<template #prefix>
-								<a-icon type="check-circle" />
-							</template>
-						</a-statistic>
+					<a-card class="stat-card">					<a-statistic
+						title="URL hoạt động"
+						:value="apiMeta.totalItems || urls.length"
+						:value-style="{ color: '#52c41a' }"
+					>
+						<template #prefix>
+							<CheckCircleOutlined />
+						</template>
+					</a-statistic>
 					</a-card>
 				</a-col>
 			</a-row>
@@ -57,17 +53,16 @@
 		<div class="filter-section">
 			<a-card>
 				<a-row :gutter="16" align="middle">
-					<a-col :span="8">
-						<a-input-search
-							v-model:value="searchText"
-							placeholder="Tìm kiếm URL..."
-							allow-clear
-							@search="handleSearch"
-						>
-							<template #prefix>
-								<a-icon type="search" />
-							</template>
-						</a-input-search>
+					<a-col :span="8">					<a-input-search
+						v-model:value="searchText"
+						placeholder="Tìm kiếm URL..."
+						allow-clear
+						@search="handleSearch"
+					>
+						<template #prefix>
+							<SearchOutlined />
+						</template>
+					</a-input-search>
 					</a-col>
 					<a-col :span="6">
 						<a-select
@@ -91,24 +86,22 @@
 						</a-select>
 					</a-col>
 					<a-col :span="6">
-						<a-space>
-							<a-button @click="handleRefresh" class="refresh-btn">
-								<template #icon>
-									<a-icon type="reload" />
-								</template>
-								Làm mới
-							</a-button>
-							<a-button
-								v-if="selectedRowKeys.length > 0"
-								type="danger"
-								@click="handleBatchDelete"
-								class="delete-btn"
-							>
-								<template #icon>
-									<a-icon type="delete" />
-								</template>
-								Xóa ({{ selectedRowKeys.length }})
-							</a-button>
+						<a-space>						<a-button @click="handleRefresh" class="refresh-btn">
+							<template #icon>
+								<ReloadOutlined />
+							</template>
+							Làm mới
+						</a-button>						<a-button
+							v-if="selectedRowKeys.length > 0"
+							type="danger"
+							@click="handleBatchDelete"
+							class="delete-btn"
+						>
+							<template #icon>
+								<DeleteOutlined />
+							</template>
+							Xóa ({{ selectedRowKeys.length }})
+						</a-button>
 						</a-space>
 					</a-col>
 				</a-row>
@@ -152,7 +145,7 @@
 										class="copy-btn"
 									>
 										<template #icon>
-											<a-icon type="copy" />
+											<CopyOutlined />
 										</template>
 									</a-button>
 								</a-tooltip>
@@ -242,7 +235,7 @@
 						size="large"
 					>
 						<template #prefix>
-							<a-icon type="link" />
+							<LinkOutlined />
 						</template>
 					</a-input>
 				</a-form-item>
@@ -264,7 +257,17 @@
 <script setup>
 import { computed, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
-import { DeleteOutlined, MoreOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
+import {
+	DeleteOutlined,
+	MoreOutlined,
+	ShareAltOutlined,
+	LinkOutlined,
+	PlusOutlined,
+	CheckCircleOutlined,
+	SearchOutlined,
+	ReloadOutlined,
+	CopyOutlined
+} from '@ant-design/icons-vue'
 import { useUrlManager } from '../composables/useUrlManager.js'
 import { useUrlFilter } from '../composables/useUrlFilter.js'
 import { useUrlForm } from '../composables/useUrlForm.js'
