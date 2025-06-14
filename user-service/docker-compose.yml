@@ -14,9 +14,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.users-service.rule=Host(`localhost`) && PathPrefix(`/users`)"
       - "traefik.http.routers.users-service.entrypoints=web"
+      - "traefik.http.middlewares.users-prefix.headers.customrequestheaders.X-Forwarded-Prefix=/users"
       - "traefik.http.routers.users-service.middlewares=users-stripprefix"
       - "traefik.http.middlewares.users-stripprefix.stripprefix.prefixes=/users"
-      - "traefik.http.services.users-service.loadbalancer.server.port=8083"
+      - "traefik.http.services.users-service.loadbalancer.server.port=8080"
     restart: always
 
   postgres:
