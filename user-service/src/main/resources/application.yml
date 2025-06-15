@@ -2,6 +2,8 @@ server:
   port: ${SERVER_PORT:8080}
   forward-headers-strategy: framework
 
+FRONTEND_URL: ${FRONTEND_URL:http://localhost}
+
 spring:
   application:
     name: user-service
@@ -36,5 +38,5 @@ management:
       show-details: always # Luôn hiển thị chi tiết
 
 jwt:
-  secret: ${JWT_SECRET:abcdef} # Secret key cho JWT
-  expiration-ms: 86400000 # 1 ngày
+  secret: ${JWT_SECRET} # Secret key cho JWT
+  expiration-ms: ${JWT_EXPIRATION:86400000} # Mặc định 1 ngày

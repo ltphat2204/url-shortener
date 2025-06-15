@@ -68,7 +68,7 @@ export class UserService {
 	static async validateToken(token) {
 		try {
 			const response = await fetch(`${API_BASE_URL}/users/token/validate`, {
-				method: 'POST',
+				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`,
 					'Content-Type': 'application/json',
