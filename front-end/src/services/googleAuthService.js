@@ -115,7 +115,6 @@ export class GoogleAuthService {
 	static async setupGoogleAuth(elementId, callback, buttonOptions = {}) {
 		try {
 			if (!this.isConfigured()) {
-				console.warn('Google Client ID not configured')
 				return false
 			}
 

@@ -62,5 +62,4 @@ export const urlTableConfig = {
 
 	// Constants
 	BASE_URL: 'http://localhost/r/',
-	CURRENT_USER_ID: 1,
 }

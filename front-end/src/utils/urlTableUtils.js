@@ -23,8 +23,7 @@ export const urlTableUtils = {
 		try {
 			await navigator.clipboard.writeText(text)
 			message.success('Đã sao chép vào clipboard!')
-		} catch (error) {
-			console.error('Failed to copy:', error)
+		} catch {
 			message.error('Không thể sao chép')
 		}
 	},

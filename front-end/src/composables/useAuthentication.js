@@ -5,6 +5,25 @@ import UserService from '../services/userService.js'
 import { useMultiStepForm } from './useMultiStepForm.js'
 import { useFormValidation } from './useFormValidation.js'
 
+/**
+ * Decode JWT token to get payload
+ * @param {string} token - JWT token
+ * @returns {Object|null} - Decoded payload or null
+ */
+const decodeJWT = (token) => {
+	try {
+		const parts = token.split('.')
+		if (parts.length !== 3) return null
+
+		const payload = parts[1]
+		const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+		return JSON.parse(decoded)
+	} catch (error) {
+		console.error('Failed to decode JWT:', error)
+		return null
+	}
+}
+
 export function useAuthentication() {
 	const router = useRouter()
 	const loading = ref(false)
@@ -59,17 +78,7 @@ export function useAuthentication() {
 				return
 			}
 
-			// Check if username or email already exists (using mock for now since backend doesn't have check endpoint)
-			if (UserService.usernameExists(signUpForm.value.username)) {
-				errors.value.username = 'Tên đăng nhập đã tồn tại'
-				return
-			}
-			if (UserService.emailExists(signUpForm.value.email)) {
-				errors.value.email = 'Email đã tồn tại'
-				return
-			}
-
-			// Send OTP
+			// Send OTP directly (backend will validate duplicates during registration)
 			const otp = await AuthService.sendOTP(
 				signUpForm.value.email,
 				signUpForm.value.fullName
@@ -138,10 +147,13 @@ export function useAuthentication() {
 			})
 
 			if (result && result.token) {
-				// Extract username from token or use form username
+				// Decode JWT token to get actual username from backend
+				const decodedToken = decodeJWT(result.token)
+				const actualUsername = decodedToken?.sub || signInForm.value.username
+
 				const userData = {
-					username: signInForm.value.username,
-					// Add other user info if available from backend
+					username: actualUsername,
+					email: signInForm.value.username, // Could be email if user logged in with email
 				}
 
 				// Save session

@@ -2,20 +2,22 @@
 	<div class="oauth-callback">
 		<div class="callback-container">
 			<div v-if="isProcessing" class="processing">
-				<div class="loading-spinner"></div>
+				<a-spin size="large" />
 				<h2>Đang xử lý đăng nhập...</h2>
 				<p>Vui lòng đợi trong giây lát</p>
 			</div>
 
 			<div v-else-if="error" class="error">
-				<div class="error-icon">❌</div>
+				<CloseCircleOutlined class="error-icon" />
 				<h2>Đăng nhập thất bại</h2>
 				<p>{{ error }}</p>
-				<button @click="goToLogin" class="btn-primary">Thử lại</button>
+				<a-button type="primary" @click="goToLogin" class="btn-primary">
+					Thử lại
+				</a-button>
 			</div>
 
 			<div v-else class="success">
-				<div class="success-icon">✅</div>
+				<CheckCircleOutlined class="success-icon" />
 				<h2>Đăng nhập thành công</h2>
 				<p>Đang chuyển hướng...</p>
 			</div>
@@ -26,6 +28,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons-vue'
 import AuthService from '../services/authService.js'
 import UserService from '../services/userService.js'
 
@@ -143,18 +146,18 @@ const goToLogin = () => {
 	gap: 16px;
 }
 
-.loading-spinner {
-	width: 48px;
-	height: 48px;
-	border: 4px solid #f3f3f3;
-	border-top: 4px solid #667eea;
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-
 .error-icon,
 .success-icon {
-	font-size: 48px;
+	font-size: 64px;
+	margin-bottom: 16px;
+}
+
+.error-icon {
+	color: #ff4d4f;
+}
+
+.success-icon {
+	color: #52c41a;
 }
 
 h2 {
@@ -170,19 +173,7 @@ p {
 }
 
 .btn-primary {
-	background: #667eea;
-	color: white;
-	border: none;
-	padding: 12px 24px;
-	border-radius: 8px;
-	cursor: pointer;
-	font-size: 16px;
-	font-weight: 500;
-	transition: background 0.3s ease;
-}
-
-.btn-primary:hover {
-	background: #5a67d8;
+	margin-top: 16px;
 }
 
 @keyframes spin {

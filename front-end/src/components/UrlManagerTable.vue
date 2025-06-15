@@ -9,8 +9,7 @@
 				</h1>
 					<p class="page-subtitle">
 						Tạo, quản lý và theo dõi các liên kết rút gọn của bạn
-					</p>
-				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
+					</p>				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
 				<template #icon>
 					<PlusOutlined />
 				</template>
@@ -352,8 +351,7 @@ const handleSubmit = async () => {
 		}
 
 		closeModal()
-	} catch (error) {
-		console.error('Form validation failed:', error)
+	} catch {
 		message.error('Có lỗi xảy ra, vui lòng thử lại')
 	} finally {
 		submitLoading.value = false

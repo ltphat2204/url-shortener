@@ -90,7 +90,6 @@ export function useOTPVerification() {
 	// Enhanced handleOTPInput with callback
 	const handleOTPInputWithCallback = (event, index) => {
 		let value = event.target.value.replace(/[^0-9]/g, '')
-		console.log(`Input at index ${index}:`, value)
 
 		// Handle multiple digits (paste case)
 		if (value.length > 1) {

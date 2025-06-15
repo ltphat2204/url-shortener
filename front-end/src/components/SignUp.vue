@@ -261,19 +261,7 @@
 				<!-- Step 3: Success -->
 				<div v-else-if="currentStep === 3" class="success-message">
 					<div class="success-icon">
-						<svg
-							width="64"
-							height="64"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-							<polyline points="22,4 12,14.01 9,11.01" />
-						</svg>
+						<CheckCircleOutlined />
 					</div>
 					<h3>Đăng ký thành công!</h3>
 					<p>
@@ -300,6 +288,7 @@
 </template>
 
 <script setup>
+import { CheckCircleOutlined } from '@ant-design/icons-vue'
 import GoogleAuthButton from './GoogleAuthButton.vue'
 import { useAuthentication } from '../composables/useAuthentication.js'
 import { useOTPVerification } from '../composables/useOTPVerification.js'
@@ -678,6 +667,7 @@ const onResendOTP = async () => {
 .success-icon {
 	font-size: 64px;
 	margin-bottom: 20px;
+	color: #52c41a; /* Ant Design success green */
 }
 
 .success-message h3 {
