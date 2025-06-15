@@ -1,7 +1,7 @@
 package ltphat.UserService.config;
 
 import ltphat.UserService.security.CustomOAuth2UserService;
-import ltphat.UserService.security.JwtFilter;
+import ltphat.UserService.security.OAuth2LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -28,10 +27,10 @@ import java.util.List;
 public class SecurityConfig {
 
     @Autowired
-    private JwtFilter jwtFilter;
+    private CustomOAuth2UserService customOAuth2UserService;
 
     @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Value("${FRONTEND_URL}")
     private String frontendUrl;
@@ -67,14 +66,13 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/users/login",
-                                "/users/register",
-                                "/users/oauth2/**",
-                                "/users/login/oauth2/code/**",
-                                "/users/token/validate",
-                                "/users/actuator/health"
+                                "/login",
+                                "/register",
+                                "/oauth2/**",
+                                "/login/oauth2/code/**",
+                                "/token/validate",
+                                "/actuator/health"
                         ).permitAll()
-                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -83,9 +81,8 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                        .defaultSuccessUrl(frontendUrl)
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        .successHandler(oAuth2LoginSuccessHandler)
+                );
 
         return http.build();
     }

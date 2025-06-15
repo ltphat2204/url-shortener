@@ -22,14 +22,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         String email = oauth2User.getAttribute("email");
+
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isEmpty()) {
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setUsername(oauth2User.getAttribute("name"));
-            // For OAuth2 users, we can set a random or no password,
-            // as they won't log in via form.
+            newUser.setUsername(email);
             newUser.setPassword("");
             userRepository.save(newUser);
         }

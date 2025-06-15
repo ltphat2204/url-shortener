@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +18,7 @@ public class TokenController {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    @PostMapping("/token/validate")
+    @GetMapping("/token/validate")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body("Invalid Authorization header");
@@ -32,7 +32,8 @@ public class TokenController {
             if (jwtUtil.validateToken(token, userDetails)) {
                 return ResponseEntity.ok("Token is valid");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid token");
         }
 
