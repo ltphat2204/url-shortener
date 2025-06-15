@@ -20,6 +20,11 @@ const router = createRouter({
 			component: () => import('../views/SignUpView.vue'),
 		},
 		{
+			path: '/oauth/callback',
+			name: 'oauthCallback',
+			component: () => import('../views/OAuthCallbackView.vue'),
+		},
+		{
 			path: '/url-manager',
 			name: 'UrlManager',
 			component: () => import('../views/UrlManagerView.vue'),
@@ -32,6 +37,12 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
 	const token = localStorage.getItem('token')
 	const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+
+	// Skip auth check for OAuth callback
+	if (to.path === '/oauth/callback') {
+		next()
+		return
+	}
 
 	if (requiresAuth && !token) {
 		next('/signIn')
