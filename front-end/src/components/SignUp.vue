@@ -186,7 +186,7 @@
 						<span>hoặc</span>
 					</div>
 
-					<GoogleAuthButton @success="onGoogleSignUp" />
+					<GoogleAuthButton />
 				</div>
 
 				<!-- Step 2: OTP Verification -->
@@ -314,7 +314,6 @@ const {
 	showConfirmPassword,
 	handleSignUp,
 	handleOTPVerification,
-	handleGoogleAuth,
 	handleResendOTP,
 	goBackToForm,
 	setOTPMethods,
@@ -376,11 +375,6 @@ const onResendOTP = async () => {
 	} finally {
 		resendLoading.value = false
 	}
-}
-
-// Handle Google Sign Up
-const onGoogleSignUp = async (credential) => {
-	await handleGoogleAuth(credential, true) // true for signup
 }
 </script>
 

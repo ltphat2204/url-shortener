@@ -89,7 +89,7 @@
 				<span>hoặc</span>
 			</div>
 
-			<GoogleAuthButton @success="onGoogleSignIn" />
+			<GoogleAuthButton />
 
 			<div class="auth-footer">
 				<p>
@@ -112,13 +112,7 @@ const {
 	errors,
 	showPassword,
 	handleSignIn,
-	handleGoogleAuth,
 } = useAuthentication()
-
-// Handle Google Sign In
-const onGoogleSignIn = async (credential) => {
-	await handleGoogleAuth(credential, false) // false for signin
-}
 
 // Wrapper for form submission
 const onSubmitSignIn = async () => {

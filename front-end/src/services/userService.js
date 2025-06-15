@@ -6,22 +6,25 @@ export class UserService {
 	/**
 	 * Đăng nhập user
 	 * @param {Object} loginData - Dữ liệu đăng nhập
-	 * @param {string} loginData.username - Username (email)
+	 * @param {string} loginData.username - Username
 	 * @param {string} loginData.password - Mật khẩu
 	 * @returns {Promise<Object>} - Token và thông tin user
 	 */
 	static async login(loginData) {
-		const response = await fetch(`${API_BASE_URL}/users/auth/login`, {
+		const response = await fetch(`${API_BASE_URL}/users/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(loginData),
+			body: JSON.stringify({
+				username: loginData.username,
+				password: loginData.password
+			}),
 		})
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+			const errorText = await response.text().catch(() => '')
+			throw new Error(errorText || `Đăng nhập thất bại: ${response.status}`)
 		}
 
 		return await response.json()
@@ -36,86 +39,25 @@ export class UserService {
 	 * @returns {Promise<Object>} - Thông tin user đã tạo
 	 */
 	static async register(registerData) {
-		const response = await fetch(`${API_BASE_URL}/users/auth/register`, {
+		const response = await fetch(`${API_BASE_URL}/users/register`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(registerData),
+			body: JSON.stringify({
+				username: registerData.username,
+				email: registerData.email,
+				password: registerData.password
+			}),
 		})
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+			const errorText = await response.text().catch(() => '')
+			throw new Error(errorText || `Đăng ký thất bại: ${response.status}`)
 		}
 
-		return await response.json()
-	}
-
-	/**
-	 * Xác thực Google OAuth
-	 * @param {string} googleToken - Token từ Google
-	 * @returns {Promise<Object>} - Token và thông tin user
-	 */
-	static async googleAuth(googleToken) {
-		const response = await fetch(`${API_BASE_URL}/users/auth/google`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ token: googleToken }),
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-		}
-
-		return await response.json()
-	}
-
-	/**
-	 * Lấy thông tin user hiện tại
-	 * @param {string} token - JWT token
-	 * @returns {Promise<Object>} - Thông tin user
-	 */
-	static async getCurrentUser(token) {
-		const response = await fetch(`${API_BASE_URL}/users/me`, {
-			method: 'GET',
-			headers: {
-				Authorization: `Bearer ${token}`,
-				'Content-Type': 'application/json',
-			},
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-		}
-
-		return await response.json()
-	}
-
-	/**
-	 * Làm mới token
-	 * @param {string} refreshToken - Refresh token
-	 * @returns {Promise<Object>} - Token mới
-	 */
-	static async refreshToken(refreshToken) {
-		const response = await fetch(`${API_BASE_URL}/users/auth/refresh`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ refreshToken }),
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-		}
-
-		return await response.json()
+		const result = await response.text()
+		return { message: result }
 	}
 
 	/**
@@ -125,7 +67,7 @@ export class UserService {
 	 */
 	static async validateToken(token) {
 		try {
-			const response = await fetch(`${API_BASE_URL}/users/auth/token/validate`, {
+			const response = await fetch(`${API_BASE_URL}/users/token/validate`, {
 				method: 'POST',
 				headers: {
 					'Authorization': `Bearer ${token}`,
@@ -141,7 +83,7 @@ export class UserService {
 	}
 
 	/**
-	 * Mock user management methods
+	 * Mock user management methods (for development/testing)
 	 */
 
 	/**
@@ -154,22 +96,40 @@ export class UserService {
 	}
 
 	/**
+	 * Check if username already exists in mock users
+	 * @param {string} username - Username to check
+	 * @returns {boolean} Whether username exists
+	 */
+	static usernameExists(username) {
+		return mockUsers.some((user) => user.username === username)
+	}
+
+	/**
 	 * Create new mock user
 	 * @param {Object} userData - User data
 	 * @returns {Object} Created user
 	 */
 	static createMockUser(userData) {
 		const newUser = {
-			username: userData.username || userData.email?.split('@')[0] || '',
+			username: userData.username,
 			email: userData.email,
 			password: userData.password || '',
-			name: userData.name || userData.fullName,
+			name: userData.name || userData.fullName || userData.username,
 			picture: userData.picture,
 			google_id: userData.google_id,
 		}
 
 		addMockUser(newUser)
 		return newUser
+	}
+
+	/**
+	 * Find mock user by username
+	 * @param {string} username - Username to search
+	 * @returns {Object|null} Found user or null
+	 */
+	static findMockUserByUsername(username) {
+		return mockUsers.find((user) => user.username === username) || null
 	}
 
 	/**
@@ -183,12 +143,12 @@ export class UserService {
 
 	/**
 	 * Verify mock user credentials
-	 * @param {string} email - User email
+	 * @param {string} username - Username
 	 * @param {string} password - User password
 	 * @returns {Object|null} User if valid, null if invalid
 	 */
-	static verifyMockCredentials(email, password) {
-		const user = this.findMockUserByEmail(email)
+	static verifyMockCredentials(username, password) {
+		const user = this.findMockUserByUsername(username)
 		if (user && user.password === password) {
 			// Don't return password in response
 			// eslint-disable-next-line no-unused-vars
@@ -205,7 +165,7 @@ export class UserService {
 	 */
 	static createUserFromGoogle(googleData) {
 		return this.createMockUser({
-			username: googleData.username,
+			username: googleData.username || googleData.email?.split('@')[0],
 			email: googleData.email,
 			name: googleData.name,
 			picture: googleData.picture,

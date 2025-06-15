@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '../services/authService.js'
+import UserService from '../services/userService.js'
 import { useMultiStepForm } from './useMultiStepForm.js'
 import { useFormValidation } from './useFormValidation.js'
 
@@ -58,14 +59,13 @@ export function useAuthentication() {
 				return
 			}
 
-			// Check if email or username already exists
-			const users = JSON.parse(localStorage.getItem('users') || '[]')
-			if (users.find(u => u.email === signUpForm.value.email)) {
-				errors.value.email = 'Email đã tồn tại'
+			// Check if username or email already exists (using mock for now since backend doesn't have check endpoint)
+			if (UserService.usernameExists(signUpForm.value.username)) {
+				errors.value.username = 'Tên đăng nhập đã tồn tại'
 				return
 			}
-			if (users.find(u => u.username === signUpForm.value.username)) {
-				errors.value.username = 'Tên đăng nhập đã tồn tại'
+			if (UserService.emailExists(signUpForm.value.email)) {
+				errors.value.email = 'Email đã tồn tại'
 				return
 			}
 
@@ -89,7 +89,7 @@ export function useAuthentication() {
 	}
 
 	/**
-	 * Handle OTP verification
+	 * Handle OTP verification and user registration
 	 */
 	const handleOTPVerification = async () => {
 		clearErrors()
@@ -97,18 +97,12 @@ export function useAuthentication() {
 
 		try {
 			if (otpMethods?.verifyOTP()) {
-				// Create user locally (no API call)
-				const newUser = {
-					username: signUpForm.value.username || signUpForm.value.email.split('@')[0],
+				// Call backend API to register user
+				await UserService.register({
+					username: signUpForm.value.username,
 					email: signUpForm.value.email,
-					name: signUpForm.value.fullName,
-					password: signUpForm.value.password, // In real app, this would be hashed
-				}
-
-				// Save to localStorage for now
-				const users = JSON.parse(localStorage.getItem('users') || '[]')
-				users.push(newUser)
-				localStorage.setItem('users', JSON.stringify(users))
+					password: signUpForm.value.password
+				})
 
 				// Move to success step
 				nextStep()
@@ -117,8 +111,8 @@ export function useAuthentication() {
 				errors.value.otp = 'Mã OTP không hợp lệ'
 			}
 		} catch (error) {
-			console.error('OTP verification error:', error)
-			errors.value.otp = 'Có lỗi xảy ra, vui lòng thử lại'
+			console.error('Registration error:', error)
+			errors.value.otp = error.message || 'Có lỗi xảy ra trong quá trình đăng ký'
 		} finally {
 			loading.value = false
 		}
@@ -137,65 +131,33 @@ export function useAuthentication() {
 				return
 			}
 
-			// Check local users
-			const users = JSON.parse(localStorage.getItem('users') || '[]')
-			const user = users.find(u =>
-				u.username === signInForm.value.username &&
-				u.password === signInForm.value.password
-			)
+			// Call backend API to login
+			const result = await UserService.login({
+				username: signInForm.value.username,
+				password: signInForm.value.password
+			})
 
-			if (user) {
+			if (result && result.token) {
+				// Extract username from token or use form username
+				const userData = {
+					username: signInForm.value.username,
+					// Add other user info if available from backend
+				}
+
 				// Save session
-				AuthService.saveUserSession(user, 'local-token')
+				AuthService.saveUserSession(userData, result.token)
 
 				// Redirect to home
 				router.push('/')
 			} else {
-				errors.value.general = 'Tên đăng nhập hoặc mật khẩu không đúng'
+				errors.value.general = 'Đăng nhập thất bại'
 			}
 
 		} catch (error) {
 			console.error('Sign in error:', error)
-			errors.value.general = error.message || 'Có lỗi xảy ra, vui lòng thử lại'
+			errors.value.general = error.message || 'Tên đăng nhập hoặc mật khẩu không đúng'
 		} finally {
 			loading.value = false
-		}
-	}
-
-	/**
-	 * Handle Google authentication
-	 */
-	const handleGoogleAuth = async (credential, isSignUp = false) => {
-		try {
-			const googleData = AuthService.parseGoogleCredential(credential)
-
-			if (isSignUp) {
-				// Check if email already exists locally
-				const users = JSON.parse(localStorage.getItem('users') || '[]')
-				if (users.find(u => u.email === googleData.email)) {
-					errors.value.general = 'Email này đã được đăng ký. Vui lòng sử dụng tính năng đăng nhập.'
-					return
-				}
-
-				// Add to local users
-				const newUser = {
-					username: googleData.username || googleData.email.split('@')[0],
-					email: googleData.email,
-					name: googleData.name,
-					password: '', // OAuth users don't need password
-					google_id: googleData.google_id,
-				}
-				users.push(newUser)
-				localStorage.setItem('users', JSON.stringify(users))
-			}
-
-			// Save session and redirect (Google auth provides its own token)
-			AuthService.saveUserSession(googleData, credential)
-			router.push('/')
-
-		} catch (error) {
-			console.error('Google auth error:', error)
-			errors.value.general = error.message || 'Lỗi xác thực Google'
 		}
 	}
 
@@ -259,7 +221,6 @@ export function useAuthentication() {
 		handleSignUp,
 		handleOTPVerification,
 		handleSignIn,
-		handleGoogleAuth,
 		handleResendOTP,
 		goBackToForm,
 		resetAllForms,
