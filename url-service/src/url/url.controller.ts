@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   ParseIntPipe,
   Post,
@@ -13,13 +12,13 @@ import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { GetShortCodeDto } from './dto/get-short-code.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { RedisService } from 'src/redis/redis.service';
 
 @Controller('url')
 export class UrlController {
   constructor(
     private readonly urlService: UrlService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
   ) {}
 
   @Post()
@@ -71,6 +70,6 @@ export class UrlController {
   @Delete(':shortCode')
   async deleteShortUrl(@Param('shortCode') shortCode: string): Promise<void> {
     await this.urlService.deleteShortUrl(shortCode);
-    await this.cacheManager.del(`urlinfo:${shortCode}`); // Clear cache for the deleted URL
+    await this.redisService.del(`urlinfo:${shortCode}`); // Clear cache for the deleted URL
   }
 }
