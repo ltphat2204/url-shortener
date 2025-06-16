@@ -19,7 +19,6 @@ import (
 type URLService interface {
 	GetDestinationURL(shortCode string) (string, error)
 	GetURLInfo(shortCode string) (*models.URLResponse, error)
-	DeleteURLFromCache(shortCode string) error
 }
 
 type urlService struct {
@@ -129,12 +128,4 @@ func (s *urlService) fetchURLInfoFromService(shortCode string) (*models.URLRespo
 	}
 
 	return apiResponse.Data, nil
-}
-
-func (s *urlService) DeleteURLFromCache(shortCode string) error {
-	ctx := context.Background()
-	cacheKey := fmt.Sprintf("urlinfo:%s", shortCode)
-
-	log.Printf("Attempting to delete cache for short code: %s (key: %s)", shortCode, cacheKey)
-	return s.cache.Delete(ctx, cacheKey)
 }

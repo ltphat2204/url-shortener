@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"log"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -77,28 +75,3 @@ func (c *URLController) HealthCheckHandler(ctx *gin.Context) {
 	})
 }
 
-// DeleteCacheHandler handles DELETE /cache/{short} - deletes URL info from cache
-func (c *URLController) DeleteCacheHandler(ctx *gin.Context) {
-	shortCode := strings.TrimSpace(ctx.Param("short"))
-
-	if shortCode == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Short code is required",
-		})
-		return
-	}
-
-	// Call the service to delete the cache entry
-	err := c.urlService.DeleteURLFromCache(shortCode)
-	if err != nil {
-		log.Printf("Error deleting cache for short code '%s': %v", shortCode, err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to delete cache entry",
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("Cache for short code '%s' deleted successfully", shortCode),
-	})
-}
