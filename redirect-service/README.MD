@@ -46,24 +46,6 @@ GET /health
 ```
 Returns service status.
 
-### Delete Cache
-```
-DELETE /{short}
-```
-Deletes the cached information for a specific short code. This is useful for forcing the service to fetch fresh data from the downstream URL Service on the next request.
-
-**Example Request:**
-```bash
-curl -X DELETE http://localhost:8080/cache/abc123
-```
-
-**Success Response (200 OK):**
-```json
-{
-  "message": "Cache for 'abc123' deleted successfully."
-}
-```
-
 ## Running the Service
 
 ### Using Go

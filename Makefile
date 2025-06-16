@@ -1,4 +1,12 @@
-.PHONY: all clean api-gateway redirect-service url-service user-service frontend
+# Redis Dependency
+REDIS_CONTAINER_NAME := dev-redis
+REDIS_IMAGE          := redis:alpine
+REDIS_PORT           := 6379
+
+# This Makefile assumes a .env file is present for Redis config.
+ENV_FILE             := .env
+
+.PHONY: all cache clean api-gateway redirect-service url-service user-service frontend
 
 api-gateway:
 	@echo "Building api-gateway..."
@@ -30,7 +38,13 @@ frontend:
 	make up &&\
 	cd ..
 
-all: api-gateway redirect-service url-service user-service frontend
+cache:
+	@echo "Building cache..."
+	@cd cache &&\
+	make up &&\
+	cd ..
+
+all: api-gateway cache redirect-service url-service user-service frontend
 
 clean:
 	@echo "Cleaning up all services..."
@@ -39,3 +53,5 @@ clean:
 	@cd url-service && make down && cd ..
 	@cd user-service && make down && cd ..
 	@cd frontend && make down && cd ..
+	@cd cache && make down && cd ..
+	@echo "All services cleaned up."

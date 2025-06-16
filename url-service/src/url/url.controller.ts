@@ -12,10 +12,14 @@ import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { GetShortCodeDto } from './dto/get-short-code.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @Controller('url')
 export class UrlController {
-  constructor(private readonly urlService: UrlService) {}
+  constructor(
+    private readonly urlService: UrlService,
+    private readonly redisService: RedisService,
+  ) {}
 
   @Post()
   async createShortUrl(@Body() createUrlDto: CreateUrlDto) {
@@ -66,5 +70,6 @@ export class UrlController {
   @Delete(':shortCode')
   async deleteShortUrl(@Param('shortCode') shortCode: string): Promise<void> {
     await this.urlService.deleteShortUrl(shortCode);
+    await this.redisService.del(`urlinfo:${shortCode}`); // Clear cache for the deleted URL
   }
 }

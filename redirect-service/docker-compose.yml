@@ -3,9 +3,6 @@ services:
     build: .
     env_file:
       - .env.production
-    depends_on:
-      redis:
-        condition: service_healthy
     networks:
        - url-shortener-net
     labels:
@@ -15,16 +12,6 @@ services:
       - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
       - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
       - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
-  redis:
-    image: "redis:alpine"
-    networks:
-      - url-shortener-net
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
 
 networks:
   url-shortener-net: 
