@@ -71,7 +71,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/oauth2/code/**",
                                 "/token/validate",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/exist"
                         ).permitAll()
                 )
                 .sessionManagement(session -> session
