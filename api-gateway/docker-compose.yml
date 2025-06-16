@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   traefik:
     image: traefik:v3.4
@@ -7,8 +9,17 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--providers.docker.watch"
+
       - "--log.level=DEBUG"
       - "--accesslog=true"
+
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      - "--metrics.prometheus.entrypoint=traefik"
+
     labels:
       - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=*"
       - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
@@ -16,13 +27,47 @@ services:
       - "traefik.http.middlewares.cors.headers.addvaryheader=true"
     ports:
       - "80:80"
-      - "8081:8080" # Dashboard
+      - "8081:8080" # Traefik Dashboard remains available on port 8081
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - url-shortener-net
-  
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"  # Directly expose Prometheus on port 9090
+    volumes:
+      - ../prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - url-shortener-net
+
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"  # Directly expose Grafana on port 3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ../grafana/config.monitoring
+    user: "104"
+    networks:
+      - url-shortener-net
+
 networks:
   url-shortener-net:
-    attachable: true
     name: url-shortener-net
+    attachable: true
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
