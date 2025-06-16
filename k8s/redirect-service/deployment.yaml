@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redirect-service-deployment
+  namespace: url-shortener
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redirect-service
+  template:
+    metadata:
+      labels:
+        app: redirect-service
+    spec:
+      containers:
+      - name: redirect-service
+        image: redirect-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: REDIS_ADDR
+          value: "redis-service:6379"
+        - name: URL_SERVICE_BASE_URL
+          value: "http://url-service"

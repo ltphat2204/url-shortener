@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: url-service
+  namespace: url-shortener
+spec:
+  selector:
+    app: url-service
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 3000

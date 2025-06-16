@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongo-init-job
+  namespace: url-shortener
+spec:
+  backoffLimit: 4 
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mongo-init
+        image: mongo:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-username
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-password
+        command:
+        - 'mongosh'
+        - '--host'
+        - 'mongodb-0.mongodb-service.url-shortener.svc.cluster.local:27017'
+        - '--eval'
+        - |
+          try {
+            print('Attempting to initiate replica set...');
+            rs.initiate({_id: "rs0", members: [{_id: 0, host: "mongodb-0.mongodb-service.url-shortener.svc.cluster.local:27017"}]});
+            print("Replica set initiated.");
+          } catch (e) {
+            if (e.codeName == 'AlreadyInitialized') {
+              print('Replica set already initialized.');
+            } else {
+              print('Error initiating replica set:', e);
+              throw e;
+            }
+          }
+
+          print('Waiting for PRIMARY member...');
+          let isPrimary = false;
+          for (let i = 0; i < 30; i++) {
+              let status = rs.status();
+              if (status && status.myState === 1) { // 1 means PRIMARY
+                  isPrimary = true;
+                  print('PRIMARY is ready.');
+                  break;
+              }
+              print('Still waiting for PRIMARY...');
+              sleep(1000);
+          }
+          if (!isPrimary) {
+              print('Error: Could not find PRIMARY member after 30 seconds.');
+              throw 'PRIMARY not found';
+          }
+          
+          const adminDb = db.getSiblingDB('admin');
+          const userExists = adminDb.system.users.findOne({ user: process.env.MONGO_ROOT_USERNAME });
+          if (!userExists) {
+            print("Creating root user...");
+            adminDb.createUser({
+              user: process.env.MONGO_ROOT_USERNAME,
+              pwd: process.env.MONGO_ROOT_PASSWORD,
+              roles: [{ role: "root", db: "admin" }]
+            });
+            print("Root user created successfully.");
+          } else {
+            print("Root user already exists.");
+          }

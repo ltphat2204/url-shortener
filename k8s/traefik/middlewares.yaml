@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: users-stripprefix
+  namespace: url-shortener
+spec:
+  stripPrefix:
+    prefixes:
+      - /users
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-stripprefix
+  namespace: url-shortener
+spec:
+  stripPrefix:
+    prefixes:
+      - /r

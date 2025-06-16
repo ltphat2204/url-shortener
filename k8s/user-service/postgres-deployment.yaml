@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:17-alpine
+        # Dùng image local, không kéo từ Docker Hub
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+        # Lấy tất cả biến môi trường từ Secret đã tạo
+        envFrom:
+        - secretRef:
+            name: postgres-secret
+        # Mount (gắn) volume lưu trữ vào đường dẫn dữ liệu của Postgres
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-storage
+        # Tương đương healthcheck, kiểm tra xem DB đã sẵn sàng chưa
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "postgres", "-d", "users"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+      # Khai báo volume sử dụng PVC đã tạo
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+# Service tạo ra một DNS name ổn định để các service khác kết nối đến
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: url-shortener
+spec:
+  selector:
+    # Service này sẽ trỏ đến các Pod có label 'app: postgres'
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
