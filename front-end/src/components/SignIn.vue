@@ -102,8 +102,8 @@
 </template>
 
 <script setup>
-import GoogleAuthButton from './GoogleAuthButton.vue'
-import { useAuthentication } from '../composables/useAuthentication.js'
+import GoogleAuthButton from '@/components/GoogleAuthButton.vue'
+import { useAuthentication } from '@/composables/useAuthentication.js'
 
 // Use authentication composable
 const {

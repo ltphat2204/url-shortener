@@ -29,8 +29,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons-vue'
-import AuthService from '../services/authService.js'
-import UserService from '../services/userService.js'
+import AuthService from '@/services/authService.js'
+import UserService from '@/services/userService.js'
+import GoogleAuthService from '@/services/googleAuthService.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -63,9 +64,11 @@ const handleOAuthCallback = async () => {
 		// Save user session
 		AuthService.saveUserSession(userInfo, token)
 
-		// Get return URL or default to home
-		const returnUrl = localStorage.getItem('oauth_return_url') || '/'
-		localStorage.removeItem('oauth_return_url')
+		// Get return URL or default to home using GoogleAuthService
+		const returnUrl = GoogleAuthService.getAndClearReturnUrl()
+
+		// Clear OAuth pending flag
+		GoogleAuthService.clearOAuthPending()
 
 		// Small delay to show success message
 		setTimeout(() => {

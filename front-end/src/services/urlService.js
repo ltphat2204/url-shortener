@@ -3,16 +3,24 @@ const SHORT_URL_BASE = import.meta.env.VITE_SHORT_URL_BASE || 'http://localhost/
 
 export class UrlService {
 	/**
-	 * Lấy danh sách URLs của user với pagination
+	 * Lấy danh sách URLs của user với pagination, sorting và search
 	 * @param {number} userId - ID của user
 	 * @param {number} page - Trang hiện tại (default: 1)
 	 * @param {number} limit - Số items per page (default: 10)
+	 * @param {string} sortBy - Trường để sort
+	 * @param {string} sortOrder - Thứ tự sort
+	 * @param {string} search - Từ khóa tìm kiếm (optional)
 	 * @returns {Promise<Object>} - API Response với data và meta
 	 */
-	static async getUrlsByUserId(userId, page = 1, limit = 10) {
+	static async getUrlsByUserId(userId, page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '') {
 		const userIdNum = parseInt(userId) || 1
 
-		const url = `${API_BASE_URL}/url/user/${userIdNum}?page=${page}&limit=${limit}`
+		let url = `${API_BASE_URL}/url/user/${userIdNum}?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+
+		// Thêm search parameter nếu có
+		if (search && search.trim()) {
+			url += `&search=${encodeURIComponent(search.trim())}`
+		}
 
 		const response = await fetch(url)
 
@@ -160,14 +168,17 @@ export class UrlService {
 	}
 
 	/**
-	 * Get URLs by user ID với pagination
+	 * Get URLs by user ID với pagination, sorting và search
 	 * @param {number} userId - User ID
 	 * @param {number} page - Trang hiện tại
 	 * @param {number} limit - Số items per page
+	 * @param {string} sortBy - Backend field name để sort
+	 * @param {string} sortOrder - Thứ tự sort
+	 * @param {string} search - Từ khóa tìm kiếm
 	 * @returns {Promise<Object>} - API response
 	 */
-	static async getUrlsWithFallback(userId, page = 1, limit = 10) {
-		const apiResponse = await this.getUrlsByUserId(userId, page, limit)
+	static async getUrlsWithFallback(userId, page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '') {
+		const apiResponse = await this.getUrlsByUserId(userId, page, limit, sortBy, sortOrder, search)
 
 		if (apiResponse.data) {
 			// Map data từ backend format
@@ -233,7 +244,6 @@ export class UrlService {
 				results.successful.push(url)
 				return { success: true, url }
 			} catch (error) {
-				console.error(`Failed to delete ${url.shortCode}:`, error)
 				results.failed.push(url)
 				results.errors.push(error)
 				return { success: false, url, error }

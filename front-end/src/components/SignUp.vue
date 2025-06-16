@@ -322,9 +322,9 @@
 <script setup>
 import { CheckCircleOutlined } from '@ant-design/icons-vue'
 import GoogleAuthButton from './GoogleAuthButton.vue'
-import { useAuthentication } from '../composables/useAuthentication.js'
-import { useOTPVerification } from '../composables/useOTPVerification.js'
-import { useRealTimeValidation } from '../composables/useRealtimeValidation.js'
+import { useAuthentication } from '@/composables/useAuthentication.js'
+import { useOTPVerification } from '@/composables/useOTPVerification.js'
+import { useRealTimeValidation } from '@/composables/useRealtimeValidation'
 import { onMounted, computed } from 'vue'
 
 // Use composables

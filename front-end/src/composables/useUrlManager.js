@@ -38,8 +38,8 @@ export function useUrlManager(emit) {
 						return userId
 					}
 				}
-			} catch (error) {
-				console.error('Failed to decode JWT token:', error)
+			} catch {
+				// Failed to decode JWT token
 			}
 		}
 
@@ -66,8 +66,8 @@ export function useUrlManager(emit) {
 		showQuickJumper: true,
 		showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 	})
-	// Load URLs from API với pagination
-	const loadUrlsFromAPI = async (page = null, pageSize = null) => {
+	// Load URLs from API với pagination, sorting và search
+	const loadUrlsFromAPI = async (page = null, pageSize = null, sortBy = 'create_at', sortOrder = 'desc', search = '') => {
 		try {
 			loading.value = true
 
@@ -75,14 +75,14 @@ export function useUrlManager(emit) {
 			const currentPage = page || pagination.value.current
 			const currentPageSize = pageSize || pagination.value.pageSize
 
-			const response = await UrlService.getUrlsWithFallback(currentUserId, currentPage, currentPageSize)
-
-			console.log('API Response debug:', {
-				dataLength: response.data?.length,
-				meta: response.meta,
+			const response = await UrlService.getUrlsWithFallback(
+				currentUserId,
 				currentPage,
-				currentPageSize
-			})
+				currentPageSize,
+				sortBy,
+				sortOrder,
+				search
+			)
 
 			urls.value = response.data
 
@@ -92,8 +92,7 @@ export function useUrlManager(emit) {
 				pagination.value.current = response.meta.currentPage
 				pagination.value.pageSize = response.meta.itemsPerPage
 			}
-		} catch (error) {
-			console.error('Error loading URLs:', error)
+		} catch {
 			message.error('Không thể tải danh sách URL')
 		} finally {
 			loading.value = false
@@ -112,8 +111,7 @@ export function useUrlManager(emit) {
 				await loadUrlsFromAPI()
 				return true
 			}
-		} catch (error) {
-			console.error('Create URL error:', error)
+		} catch {
 			message.error('Có lỗi xảy ra khi tạo URL')
 		}
 		return false
@@ -144,9 +142,9 @@ export function useUrlManager(emit) {
 			} else {
 				message.error('Không thể xóa URL')
 			}
-		} catch (error) {
-			console.error('Delete URL error:', error)
-			message.error('Có lỗi xảy ra khi xóa URL')		}
+		} catch {
+			message.error('Có lỗi xảy ra khi xóa URL')
+		}
 	}
 
 	// Batch delete URLs
@@ -171,8 +169,7 @@ export function useUrlManager(emit) {
 			}
 
 			await loadUrlsFromAPI()
-		} catch (error) {
-			console.error('Batch delete error:', error)
+		} catch {
 			message.error('Có lỗi xảy ra khi xóa URLs')
 		} finally {
 			loading.value = false

@@ -1,13 +1,15 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
+import AuthService from '../services/authService.js'
+
 const router = useRouter()
 const route = useRoute()
 
 function handleLogout() {
 	const needsRedirect = route.meta?.requiresAuth
 
-	localStorage.removeItem('token')
-	localStorage.removeItem('user')
+	// Use AuthService to clear session
+	AuthService.clearUserSession()
 
 	if (needsRedirect) {
 		router.push('/')

@@ -43,8 +43,13 @@
 							style="width: 100%"
 							@change="handleSort"
 						>
-							<a-select-option value="createdAt">Ngày tạo</a-select-option>
-							<a-select-option value="shortUrl">URL ngắn</a-select-option>
+							<a-select-option
+								v-for="option in urlTableConfig.sortOptions"
+								:key="option.value"
+								:value="option.value"
+							>
+								{{ option.label }}
+							</a-select-option>
 						</a-select>
 					</a-col>
 					<a-col :span="4">
@@ -135,6 +140,15 @@
 								>
 									{{ truncateUrl(record.originalUrl, 50) }}
 								</a>
+							</a-tooltip>
+						</template>
+
+						<!-- Custom render cho cột Description -->
+						<template v-else-if="column.key === 'description'">
+							<a-tooltip :title="record.description">
+								<span class="description-cell">
+									{{ record.description || 'Không có mô tả' }}
+								</span>
 							</a-tooltip>
 						</template>
 
@@ -235,11 +249,11 @@ import {
 	CopyOutlined
 } from '@ant-design/icons-vue'
 import { useUrlManager } from '../composables/useUrlManager.js'
-import { useUrlFilter } from '../composables/useUrlFilter.js'
-import { useUrlForm } from '../composables/useUrlForm.js'
-import { urlTableUtils } from '../utils/urlTableUtils.js'
-import { urlTableConfig } from '../config/urlTableConfig.js'
-import { useTableEvents } from '../composables/useTableEvents.js'
+import { useUrlFilter } from '@/composables/useUrlFilter.js'
+import { useUrlForm } from '@/composables/useUrlForm.js'
+import { urlTableUtils } from '@/utils/urlTableUtils.js'
+import { urlTableConfig } from '@/config/urlTableConfig.js'
+import { useTableEvents } from '@/composables/useTableEvents.js'
 
 const emit = defineEmits(['urlAdded', 'urlUpdated', 'urlDeleted'])
 
@@ -278,7 +292,7 @@ const {
 	handleSort,
 	handleRefresh,
 	handleTableChange,
-} = useTableEvents(pagination, loadUrlsFromAPI)
+} = useTableEvents(pagination, loadUrlsFromAPI, searchText, sortBy, sortOrder)
 
 // Configuration
 const { columns } = urlTableConfig
@@ -317,7 +331,7 @@ const handleBatchDelete = async () => {
 const { copyToClipboard, shareUrl, formatDate, formatTime, truncateUrl } = urlTableUtils
 
 onMounted(() => {
-	loadUrlsFromAPI(1, 10) // Load trang 1, 10 items per page
+	loadUrlsFromAPI(1, 10, sortBy.value, sortOrder.value, searchText.value) // Load với parameters đầy đủ
 })
 </script>
 
@@ -414,6 +428,11 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+.description-cell {
+	color: #666;
+	font-size: 13px;
 }
 
 .short-url-link {
