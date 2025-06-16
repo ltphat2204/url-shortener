@@ -3,9 +3,6 @@ services:
     build: .
     env_file:
       - .env.production
-    depends_on:
-      redis:
-        condition: service_healthy
     networks:
        - url-shortener-net
     labels:
