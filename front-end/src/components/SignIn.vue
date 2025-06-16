@@ -312,6 +312,8 @@ const onSubmitSignIn = async () => {
 	padding: 0 20px;
 	color: #666;
 	font-size: 14px;
+	position: relative;
+	z-index: 1;
 }
 
 .btn-google {
@@ -339,6 +341,7 @@ const onSubmitSignIn = async () => {
 
 .auth-footer {
 	text-align: center;
+	margin-top: 20px;
 }
 
 .auth-footer p {

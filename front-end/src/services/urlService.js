@@ -3,14 +3,16 @@ const SHORT_URL_BASE = import.meta.env.VITE_SHORT_URL_BASE || 'http://localhost/
 
 export class UrlService {
 	/**
-	 * Lấy danh sách URLs của user
+	 * Lấy danh sách URLs của user với pagination
 	 * @param {number} userId - ID của user
+	 * @param {number} page - Trang hiện tại (default: 1)
+	 * @param {number} limit - Số items per page (default: 10)
 	 * @returns {Promise<Object>} - API Response với data và meta
 	 */
-	static async getUrlsByUserId(userId) {
+	static async getUrlsByUserId(userId, page = 1, limit = 10) {
 		const userIdNum = parseInt(userId) || 1
 
-		const url = `${API_BASE_URL}/url/user/${userIdNum}`
+		const url = `${API_BASE_URL}/url/user/${userIdNum}?page=${page}&limit=${limit}`
 
 		const response = await fetch(url)
 
@@ -158,12 +160,14 @@ export class UrlService {
 	}
 
 	/**
-	 * Get URLs by user ID
+	 * Get URLs by user ID với pagination
 	 * @param {number} userId - User ID
+	 * @param {number} page - Trang hiện tại
+	 * @param {number} limit - Số items per page
 	 * @returns {Promise<Object>} - API response
 	 */
-	static async getUrlsWithFallback(userId) {
-		const apiResponse = await this.getUrlsByUserId(userId)
+	static async getUrlsWithFallback(userId, page = 1, limit = 10) {
+		const apiResponse = await this.getUrlsByUserId(userId, page, limit)
 
 		if (apiResponse.data) {
 			// Map data từ backend format

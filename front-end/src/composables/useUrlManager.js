@@ -66,13 +66,23 @@ export function useUrlManager(emit) {
 		showQuickJumper: true,
 		showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 	})
-	// Load URLs from API
-	const loadUrlsFromAPI = async () => {
+	// Load URLs from API với pagination
+	const loadUrlsFromAPI = async (page = null, pageSize = null) => {
 		try {
 			loading.value = true
 
 			const currentUserId = getCurrentUserId()
-			const response = await UrlService.getUrlsWithFallback(currentUserId)
+			const currentPage = page || pagination.value.current
+			const currentPageSize = pageSize || pagination.value.pageSize
+
+			const response = await UrlService.getUrlsWithFallback(currentUserId, currentPage, currentPageSize)
+
+			console.log('API Response debug:', {
+				dataLength: response.data?.length,
+				meta: response.meta,
+				currentPage,
+				currentPageSize
+			})
 
 			urls.value = response.data
 

@@ -637,6 +637,8 @@ const onResendOTP = async () => {
 	padding: 0 16px;
 	color: #666;
 	font-size: 14px;
+	position: relative;
+	z-index: 1;
 }
 
 .error-message {
@@ -864,6 +866,7 @@ const onResendOTP = async () => {
 
 .auth-footer {
 	text-align: center;
+	margin-top: 20px;
 }
 
 .auth-footer p {
