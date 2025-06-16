@@ -7,7 +7,6 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/libs/prisma/prisma.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { generateShortCode } from 'src/utils/nanoid.util';
-import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Injectable()
 export class UrlService {
@@ -85,22 +84,71 @@ export class UrlService {
     };
   }
 
-  async getUrlsByUserId(userId: number, paginationQuery: PaginationQueryDto) {
-    const page = paginationQuery.page ? paginationQuery.page : 1;
-    const limit = paginationQuery.limit ? paginationQuery.limit : 10;
+  async getUrlsByUserId(
+    userId: number,
+    page: number,
+    limit: number,
+    sortBy: 'short_code' | 'create_at' | 'title' | 'destination_url',
+    sortOrder: 'asc' | 'desc',
+    search?: string,
+  ) {
     const skip = (page - 1) * limit;
+
+    // 1. Define the base WHERE clause
+    let where: Prisma.short_urlWhereInput = {
+      user_id: userId,
+    };
+
+    // 2. Add search conditions if a search term is provided
+    if (search) {
+      where.AND = [ // Use AND to combine with the user_id requirement
+        {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: 'insensitive', // Case-insensitive search
+              },
+            },
+            {
+              description: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              short_code: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      ];
+    }
+    
+    // 3. Define the ORDER BY clause dynamically
+    const orderBy: Prisma.short_urlOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
+
+    // 4. Execute both queries in a transaction
+    //    It's crucial to use the same `where` clause for both findMany and count
     const [urlRecords, totalCount] = await this.prisma.$transaction([
       this.prisma.short_url.findMany({
-        where: { user_id: userId },
+        where, // Use the dynamically built where clause
         take: limit,
         skip: skip,
-        orderBy: { create_at: 'desc' },
+        orderBy, // Use the dynamically built orderBy clause
       }),
       this.prisma.short_url.count({
-        where: { user_id: userId },
+        where, // Use the same where clause for an accurate count
       }),
     ]);
+
+    // 5. Calculate pagination metadata and return the final structure
     const totalPages = Math.ceil(totalCount / limit);
+
     return {
       data: urlRecords,
       meta: {
@@ -111,6 +159,7 @@ export class UrlService {
       },
     };
   }
+  
   async deleteShortUrl(shortCode: string): Promise<void> {
     try {
       await this.prisma.short_url.delete({
