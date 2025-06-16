@@ -79,6 +79,41 @@ export class UserService {
 			return false
 		}
 	}
+
+	/**
+	 * Check if email and username already exist
+	 * @param {Object} data - Data to check
+	 * @param {string} data.email - Email to check (optional)
+	 * @param {string} data.username - Username to check (optional)
+	 * @returns {Promise<Object>} - { emailExists: boolean, usernameExists: boolean }
+	 */
+	static async checkAvailability(data) {
+		try {
+			const params = new URLSearchParams()
+			if (data.email) {
+				params.append('email', data.email)
+			}
+			if (data.username) {
+				params.append('username', data.username)
+			}
+
+			const response = await fetch(`${API_BASE_URL}/users/exist?${params.toString()}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			})
+
+			if (!response.ok) {
+				throw new Error(`Check availability failed: ${response.status}`)
+			}
+
+			return await response.json()
+		} catch (error) {
+			console.error('Check availability error:', error)
+			return { emailExists: false, usernameExists: false }
+		}
+	}
 }
 
 export default UserService

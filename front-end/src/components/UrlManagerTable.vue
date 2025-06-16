@@ -215,11 +215,11 @@
 			</a-card>
 		</div>
 
-		<!-- Modal thêm/sửa URL -->
+		<!-- Modal thêmURL -->
 		<a-modal
 			v-model:open="showAddModal"
-			:title="editTarget ? 'Chỉnh sửa URL' : 'Thêm URL mới'"
-			:ok-text="editTarget ? 'Cập nhật' : 'Thêm'"
+			title="Thêm URL mới"
+			ok-text="Thêm"
 			cancel-text="Hủy"
 			:confirm-loading="submitLoading"
 			@ok="handleSubmit"
@@ -298,7 +298,6 @@ const {
 
 const {
 	showAddModal,
-	editTarget,
 	formRef,
 	form,
 	rules,
@@ -342,14 +341,7 @@ const handleSubmit = async () => {
 		await validateForm()
 		submitLoading.value = true
 
-		if (editTarget.value) {
-			// Update existing URL - chưa implement vì backend chưa có API update
-			message.warning('Chức năng cập nhật đang được phát triển')
-		} else {
-			// Create new URL
-			await createUrl(form.value)
-		}
-
+		await createUrl(form.value)
 		closeModal()
 	} catch {
 		message.error('Có lỗi xảy ra, vui lòng thử lại')
