@@ -95,13 +95,14 @@ export class UrlService {
     const skip = (page - 1) * limit;
 
     // 1. Define the base WHERE clause
-    let where: Prisma.short_urlWhereInput = {
+    const where: Prisma.short_urlWhereInput = {
       user_id: userId,
     };
 
     // 2. Add search conditions if a search term is provided
     if (search) {
-      where.AND = [ // Use AND to combine with the user_id requirement
+      where.AND = [
+        // Use AND to combine with the user_id requirement
         {
           OR: [
             {
@@ -126,7 +127,7 @@ export class UrlService {
         },
       ];
     }
-    
+
     // 3. Define the ORDER BY clause dynamically
     const orderBy: Prisma.short_urlOrderByWithRelationInput = {
       [sortBy]: sortOrder,
@@ -159,7 +160,7 @@ export class UrlService {
       },
     };
   }
-  
+
   async deleteShortUrl(shortCode: string): Promise<void> {
     try {
       await this.prisma.short_url.delete({

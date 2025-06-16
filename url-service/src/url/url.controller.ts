@@ -59,7 +59,8 @@ export class UrlController {
     @Param('userId', ParseIntPipe) userId: number,
     @Query('limit') limitQuery?: string,
     @Query('page') pageQuery?: string,
-    @Query('sortBy') sortBy?: 'short_code' | 'create_at' | 'title' | 'destination_url',
+    @Query('sortBy')
+    sortBy?: 'short_code' | 'create_at' | 'title' | 'destination_url',
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
     @Query('search') search?: string,
   ) {
