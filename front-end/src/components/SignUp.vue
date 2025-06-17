@@ -255,10 +255,10 @@
 								type="text"
 								inputmode="numeric"
 								pattern="[0-9]*"
-								maxlength="1"
 								:value="otpDigits[index]"
 								@input="handleOTPInputWithAutoSubmit($event, index)"
 								@keydown="handleOTPKeydown($event, index)"
+								@paste="handleOTPPasteWithAutoSubmit($event, index)"
 								class="otp-input"
 								autocomplete="one-time-code"
 							/>
@@ -324,7 +324,7 @@ import { CheckCircleOutlined } from '@ant-design/icons-vue'
 import GoogleAuthButton from './GoogleAuthButton.vue'
 import { useAuthentication } from '@/composables/useAuthentication.js'
 import { useOTPVerification } from '@/composables/useOTPVerification.js'
-import { useRealTimeValidation } from '@/composables/useRealtimeValidation'
+import { useRealTimeValidation } from '@/composables/useRealTimeValidation'
 import { onMounted, computed } from 'vue'
 
 // Use composables
@@ -351,6 +351,7 @@ const {
 	resendLoading,
 	handleOTPInputWithCallback,
 	handleOTPKeydown,
+	handleOTPPaste,
 	setGeneratedOTP,
 	verifyOTP,
 	resetOTP,
@@ -436,6 +437,17 @@ setOTPMethods({
 // Handle OTP auto-submit when complete
 const handleOTPInputWithAutoSubmit = (event, index) => {
 	handleOTPInputWithCallback(event, index)
+	// Auto-submit when OTP is complete
+	setTimeout(() => {
+		if (isOTPComplete.value) {
+			handleOTPVerification()
+		}
+	}, 100)
+}
+
+// Handle OTP paste with auto-submit when complete
+const handleOTPPasteWithAutoSubmit = (event, index) => {
+	handleOTPPaste(event, index)
 	// Auto-submit when OTP is complete
 	setTimeout(() => {
 		if (isOTPComplete.value) {
