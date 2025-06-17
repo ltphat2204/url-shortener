@@ -11,7 +11,7 @@ MONGO_IMAGE          := mongo:latest
 MONGO_PORT           := 27017
 MONGO_VOLUME         := dev-mongo-data
 # This Makefile assumes a .env file is present for service config.
-ENV_FILE             := .env
+ENV_FILE             := .env.production
 
 # --- Cross-Platform Helpers ---
 # Set the correct 'remove directory' command based on the operating system
