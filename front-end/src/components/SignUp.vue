@@ -39,11 +39,24 @@
 									@blur="handleFieldBlur('username')"
 									required
 								/>
-								<div class="validation-indicator" v-if="usernameValidation.isValidating">
+								<div
+									class="validation-indicator"
+									v-if="usernameValidation.isValidating"
+								>
 									<div class="spinner"></div>
 								</div>
-								<div class="validation-indicator success" v-else-if="usernameValidation.isAvailable === true">
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<div
+									class="validation-indicator success"
+									v-else-if="usernameValidation.isAvailable === true"
+								>
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+									>
 										<polyline points="20,6 9,17 4,12"></polyline>
 									</svg>
 								</div>
@@ -66,11 +79,24 @@
 									@blur="handleFieldBlur('email')"
 									required
 								/>
-								<div class="validation-indicator" v-if="emailValidation.isValidating">
+								<div
+									class="validation-indicator"
+									v-if="emailValidation.isValidating"
+								>
 									<div class="spinner"></div>
 								</div>
-								<div class="validation-indicator success" v-else-if="emailValidation.isAvailable === true">
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<div
+									class="validation-indicator success"
+									v-else-if="emailValidation.isAvailable === true"
+								>
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+									>
 										<polyline points="20,6 9,17 4,12"></polyline>
 									</svg>
 								</div>
@@ -197,7 +223,11 @@
 						</div>
 
 						<div class="form-actions">
-							<button type="submit" :disabled="loading || !canSubmitForm" class="btn-primary">
+							<button
+								type="submit"
+								:disabled="loading || !canSubmitForm"
+								class="btn-primary"
+							>
 								<span v-if="loading" class="loading-spinner"></span>
 								{{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
 							</button>
@@ -207,7 +237,12 @@
 								<small v-if="getEmailError || getUsernameError">
 									Vui lòng sửa lỗi trước khi tiếp tục
 								</small>
-								<small v-else-if="emailValidation.isAvailable === false || usernameValidation.isAvailable === false">
+								<small
+									v-else-if="
+										emailValidation.isAvailable === false ||
+										usernameValidation.isAvailable === false
+									"
+								>
 									Email hoặc tên đăng nhập đã được sử dụng
 								</small>
 							</div>
@@ -241,9 +276,11 @@
 								<polyline points="22,6 12,13 2,6" />
 							</svg>
 						</div>
-						<h3>Xác thực email</h3>					<p>
-						Chúng tôi đã gửi mã OTP đến email <strong>{{ signUpForm.email }}</strong>
-					</p>
+						<h3>Xác thực email</h3>
+						<p>
+							Chúng tôi đã gửi mã OTP đến email
+							<strong>{{ signUpForm.email }}</strong>
+						</p>
 					</div>
 
 					<form @submit.prevent="onVerifyOTP" class="otp-form">
@@ -277,7 +314,10 @@
 					</form>
 
 					<div class="otp-footer">
-						<p v-if="!canResendOTP">Gửi lại mã sau <strong>{{ resendCountdown }}</strong>s</p>
+						<p v-if="!canResendOTP">
+							Gửi lại mã sau <strong>{{ resendCountdown }}</strong
+							>s
+						</p>
 						<button
 							v-else
 							@click="onResendOTP"
@@ -368,7 +408,7 @@ const {
 	validateEmailOnBlur,
 	validateUsernameOnBlur,
 	watchEmailValidation,
-	watchUsernameValidation
+	watchUsernameValidation,
 } = useRealTimeValidation()
 
 // Setup real-time validation watchers
@@ -395,13 +435,13 @@ const handleFieldBlur = (field) => {
 const emailInputClass = computed(() => ({
 	error: errors.value.email || emailValidation.value.error,
 	validating: emailValidation.value.isValidating,
-	success: emailValidation.value.isAvailable === true
+	success: emailValidation.value.isAvailable === true,
 }))
 
 const usernameInputClass = computed(() => ({
 	error: errors.value.username || usernameValidation.value.error,
 	validating: usernameValidation.value.isValidating,
-	success: usernameValidation.value.isAvailable === true
+	success: usernameValidation.value.isAvailable === true,
 }))
 
 const getEmailError = computed(() => {
@@ -418,7 +458,10 @@ const canSubmitForm = computed(() => {
 		return false
 	}
 
-	if (emailValidation.value.isAvailable === false || usernameValidation.value.isAvailable === false) {
+	if (
+		emailValidation.value.isAvailable === false ||
+		usernameValidation.value.isAvailable === false
+	) {
 		return false
 	}
 	return true
@@ -475,7 +518,10 @@ const onSubmitSignUp = async () => {
 		return
 	}
 
-	if (emailValidation.value.isAvailable === null || usernameValidation.value.isAvailable === null) {
+	if (
+		emailValidation.value.isAvailable === null ||
+		usernameValidation.value.isAvailable === null
+	) {
 		await validateBothOnBlur(email, username)
 		if (!canSubmitForm.value) {
 			return
@@ -853,8 +899,12 @@ const onResendOTP = async () => {
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 .success-icon {

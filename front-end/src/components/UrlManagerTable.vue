@@ -3,18 +3,21 @@
 		<!-- Header với nút thêm URL -->
 		<div class="header-section">
 			<div class="header-content">
-				<div class="title-section">				<h1 class="page-title">
-					<LinkOutlined />
-					Quản lý URL
-				</h1>
+				<div class="title-section">
+					<h1 class="page-title">
+						<LinkOutlined />
+						Quản lý URL
+					</h1>
 					<p class="page-subtitle">
 						Tạo, quản lý và theo dõi các liên kết rút gọn của bạn
-					</p>				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
-				<template #icon>
-					<LinkOutlined />
-				</template>
-				Tạo URL ngắn
-			</a-button>
+					</p>
+				</div>
+				<a-button type="primary" size="large" @click="showModal" class="add-btn">
+					<template #icon>
+						<LinkOutlined />
+					</template>
+					Tạo URL ngắn
+				</a-button>
 			</div>
 		</div>
 
@@ -22,16 +25,17 @@
 		<div class="filter-section">
 			<a-card>
 				<a-row :gutter="16" align="middle">
-					<a-col :span="8">					<a-input-search
-						v-model:value="searchText"
-						placeholder="Tìm kiếm URL..."
-						allow-clear
-						@search="handleSearch"
-					>
-						<template #prefix>
-							<SearchOutlined />
-						</template>
-					</a-input-search>
+					<a-col :span="8">
+						<a-input-search
+							v-model:value="searchText"
+							placeholder="Tìm kiếm URL..."
+							allow-clear
+							@search="handleSearch"
+						>
+							<template #prefix>
+								<SearchOutlined />
+							</template>
+						</a-input-search>
 					</a-col>
 					<a-col :span="2" class="sort-label-col">
 						<span class="sort-label">Sắp xếp theo:</span>
@@ -63,22 +67,24 @@
 						</a-select>
 					</a-col>
 					<a-col :span="4">
-						<a-space>						<a-button @click="handleRefresh" class="refresh-btn">
-							<template #icon>
-								<ReloadOutlined />
-							</template>
-							Làm mới
-						</a-button>						<a-button
-							v-if="selectedRowKeys.length > 0"
-							type="danger"
-							@click="handleBatchDelete"
-							class="delete-btn"
-						>
-							<template #icon>
-								<DeleteOutlined />
-							</template>
-							Xóa ({{ selectedRowKeys.length }})
-						</a-button>
+						<a-space>
+							<a-button @click="handleRefresh" class="refresh-btn">
+								<template #icon>
+									<ReloadOutlined />
+								</template>
+								Làm mới
+							</a-button>
+							<a-button
+								v-if="selectedRowKeys.length > 0"
+								type="danger"
+								@click="handleBatchDelete"
+								class="delete-btn"
+							>
+								<template #icon>
+									<DeleteOutlined />
+								</template>
+								Xóa ({{ selectedRowKeys.length }})
+							</a-button>
 						</a-space>
 					</a-col>
 				</a-row>
@@ -246,7 +252,7 @@ import {
 	LinkOutlined,
 	SearchOutlined,
 	ReloadOutlined,
-	CopyOutlined
+	CopyOutlined,
 } from '@ant-design/icons-vue'
 import { useUrlManager } from '../composables/useUrlManager.js'
 import { useUrlFilter } from '@/composables/useUrlFilter.js'
@@ -269,21 +275,9 @@ const {
 	batchDeleteUrls,
 } = useUrlManager(emit)
 
-const {
-	searchText,
-	sortBy,
-	sortOrder,
-} = useUrlFilter()
+const { searchText, sortBy, sortOrder } = useUrlFilter()
 
-const {
-	showAddModal,
-	formRef,
-	form,
-	rules,
-	showModal,
-	closeModal,
-	validateForm,
-} = useUrlForm()
+const { showAddModal, formRef, form, rules, showModal, closeModal, validateForm } = useUrlForm()
 
 const {
 	selectedRowKeys,
@@ -302,7 +296,12 @@ const paginationComputed = computed(() => {
 	return {
 		...pagination.value,
 		showTotal: (total, range) =>
-			urlTableUtils.getPaginationText(total, range, pagination.value.current, pagination.value.pageSize),
+			urlTableUtils.getPaginationText(
+				total,
+				range,
+				pagination.value.current,
+				pagination.value.pageSize,
+			),
 	}
 })
 
@@ -418,7 +417,6 @@ onMounted(() => {
 	color: #333;
 	white-space: nowrap;
 }
-
 
 .table-section {
 	margin-bottom: 24px;

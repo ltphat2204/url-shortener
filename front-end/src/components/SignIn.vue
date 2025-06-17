@@ -106,13 +106,7 @@ import GoogleAuthButton from '@/components/GoogleAuthButton.vue'
 import { useAuthentication } from '@/composables/useAuthentication.js'
 
 // Use authentication composable
-const {
-	signInForm,
-	loading,
-	errors,
-	showPassword,
-	handleSignIn,
-} = useAuthentication()
+const { signInForm, loading, errors, showPassword, handleSignIn } = useAuthentication()
 
 // Wrapper for form submission
 const onSubmitSignIn = async () => {

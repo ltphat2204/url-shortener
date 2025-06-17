@@ -32,9 +32,14 @@ export function useUrlManager(emit) {
 					const tokenData = JSON.parse(decoded)
 
 					if (tokenData.sub) {
-						const userId = Math.abs(tokenData.sub.split('').reduce((hash, char) => {
-							return char.charCodeAt(0) + ((hash << 5) - hash)
-						}, 0)) % 100000 + 1000
+						const userId =
+							(Math.abs(
+								tokenData.sub.split('').reduce((hash, char) => {
+									return char.charCodeAt(0) + ((hash << 5) - hash)
+								}, 0),
+							) %
+								100000) +
+							1000
 						return userId
 					}
 				}
@@ -47,9 +52,14 @@ export function useUrlManager(emit) {
 		let identifier = currentUser?.email || currentUser?.username
 		if (identifier) {
 			// Create a consistent numeric ID from identifier
-			const userId = Math.abs(identifier.split('').reduce((hash, char) => {
-				return char.charCodeAt(0) + ((hash << 5) - hash)
-			}, 0)) % 100000 + 1000
+			const userId =
+				(Math.abs(
+					identifier.split('').reduce((hash, char) => {
+						return char.charCodeAt(0) + ((hash << 5) - hash)
+					}, 0),
+				) %
+					100000) +
+				1000
 			return userId
 		}
 
@@ -67,7 +77,13 @@ export function useUrlManager(emit) {
 		showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 	})
 	// Load URLs from API với pagination, sorting và search
-	const loadUrlsFromAPI = async (page = null, pageSize = null, sortBy = 'create_at', sortOrder = 'desc', search = '') => {
+	const loadUrlsFromAPI = async (
+		page = null,
+		pageSize = null,
+		sortBy = 'create_at',
+		sortOrder = 'desc',
+		search = '',
+	) => {
 		try {
 			loading.value = true
 
@@ -81,7 +97,7 @@ export function useUrlManager(emit) {
 				currentPageSize,
 				sortBy,
 				sortOrder,
-				search
+				search,
 			)
 
 			urls.value = response.data
@@ -164,7 +180,7 @@ export function useUrlManager(emit) {
 				message.success(`Xóa thành công ${results.successful.length} URL!`)
 			} else {
 				message.warning(
-					`Xóa thành công ${results.successful.length} URL, thất bại ${results.failed.length} URL`
+					`Xóa thành công ${results.successful.length} URL, thất bại ${results.failed.length} URL`,
 				)
 			}
 

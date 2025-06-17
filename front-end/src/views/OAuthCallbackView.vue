@@ -11,9 +11,7 @@
 				<CloseCircleOutlined class="error-icon" />
 				<h2>Đăng nhập thất bại</h2>
 				<p>{{ error }}</p>
-				<a-button type="primary" @click="goToLogin" class="btn-primary">
-					Thử lại
-				</a-button>
+				<a-button type="primary" @click="goToLogin" class="btn-primary"> Thử lại </a-button>
 			</div>
 
 			<div v-else class="success">
@@ -74,7 +72,6 @@ const handleOAuthCallback = async () => {
 		setTimeout(() => {
 			router.push(returnUrl)
 		}, 1500)
-
 	} catch (err) {
 		console.error('OAuth callback error:', err)
 		error.value = err.message || 'Có lỗi xảy ra trong quá trình đăng nhập'
@@ -94,8 +91,8 @@ const extractUserFromToken = (token) => {
 		const jsonPayload = decodeURIComponent(
 			atob(base64)
 				.split('')
-				.map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-				.join('')
+				.map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+				.join(''),
 		)
 
 		const payload = JSON.parse(jsonPayload)
@@ -110,7 +107,7 @@ const extractUserFromToken = (token) => {
 		return {
 			username: 'user',
 			email: '',
-			name: 'User'
+			name: 'User',
 		}
 	}
 }
@@ -180,7 +177,11 @@ p {
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 </style>

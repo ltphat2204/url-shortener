@@ -111,9 +111,14 @@ export class AuthService {
 			const identifier = userObject.email || userObject.username
 			if (identifier) {
 				// Use same hash logic as getCurrentUserId for consistency
-				userObject.id = Math.abs(identifier.split('').reduce((hash, char) => {
-					return char.charCodeAt(0) + ((hash << 5) - hash)
-				}, 0)) % 100000 + 1000
+				userObject.id =
+					(Math.abs(
+						identifier.split('').reduce((hash, char) => {
+							return char.charCodeAt(0) + ((hash << 5) - hash)
+						}, 0),
+					) %
+						100000) +
+					1000
 			}
 		}
 
@@ -162,10 +167,14 @@ export class AuthService {
 		const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 		const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
-		return !!(serviceId && templateId && publicKey &&
+		return !!(
+			serviceId &&
+			templateId &&
+			publicKey &&
 			serviceId !== 'your-service-id' &&
 			templateId !== 'your-template-id' &&
-			publicKey !== 'your-public-key')
+			publicKey !== 'your-public-key'
+		)
 	}
 }
 

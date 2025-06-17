@@ -12,18 +12,36 @@ export function useTableEvents(pagination, loadUrlsFromAPI, searchText, sortBy, 
 	// Handle search
 	const handleSearch = async () => {
 		pagination.value.current = 1
-		await loadUrlsFromAPI(1, pagination.value.pageSize, sortBy.value, sortOrder.value, searchText.value)
+		await loadUrlsFromAPI(
+			1,
+			pagination.value.pageSize,
+			sortBy.value,
+			sortOrder.value,
+			searchText.value,
+		)
 	}
 
 	// Handle sort
 	const handleSort = async () => {
 		pagination.value.current = 1
-		await loadUrlsFromAPI(1, pagination.value.pageSize, sortBy.value, sortOrder.value, searchText.value)
+		await loadUrlsFromAPI(
+			1,
+			pagination.value.pageSize,
+			sortBy.value,
+			sortOrder.value,
+			searchText.value,
+		)
 	}
 
 	// Handle refresh
 	const handleRefresh = async () => {
-		await loadUrlsFromAPI(1, pagination.value.pageSize, sortBy.value, sortOrder.value, searchText.value)
+		await loadUrlsFromAPI(
+			1,
+			pagination.value.pageSize,
+			sortBy.value,
+			sortOrder.value,
+			searchText.value,
+		)
 		message.success('Đã làm mới dữ liệu!')
 	}
 
@@ -31,7 +49,13 @@ export function useTableEvents(pagination, loadUrlsFromAPI, searchText, sortBy, 
 	const handleTableChange = async (pag) => {
 		pagination.value.current = pag.current
 		pagination.value.pageSize = pag.pageSize
-		await loadUrlsFromAPI(pag.current, pag.pageSize, sortBy.value, sortOrder.value, searchText.value)
+		await loadUrlsFromAPI(
+			pag.current,
+			pag.pageSize,
+			sortBy.value,
+			sortOrder.value,
+			searchText.value,
+		)
 	}
 
 	return {
