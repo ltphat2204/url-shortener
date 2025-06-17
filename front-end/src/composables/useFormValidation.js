@@ -1,7 +1,9 @@
 import { ref } from 'vue'
+import UserService from '../services/userService.js'
 
 export function useFormValidation() {
 	const errors = ref({})
+	const isValidating = ref({})
 
 	// Validation rules
 	const validateFullName = (fullName) => {
@@ -61,6 +63,29 @@ export function useFormValidation() {
 		return null
 	}
 
+	// Async validation for email and username availability
+	const validateAvailability = async (email, username) => {
+		const data = {}
+		if (email && !validateEmail(email)) {
+			data.email = email
+		}
+		if (username && !validateUsername(username)) {
+			data.username = username
+		}
+
+		if (Object.keys(data).length === 0) {
+			return { emailExists: false, usernameExists: false }
+		}
+
+		try {
+			const result = await UserService.checkAvailability(data)
+			return result
+		} catch (error) {
+			console.error('Availability validation error:', error)
+			return { emailExists: false, usernameExists: false }
+		}
+	}
+
 	// Form validation
 	const validateSignUpForm = (form) => {
 		const newErrors = {}
@@ -112,14 +137,19 @@ export function useFormValidation() {
 	return {
 		// State
 		errors,
+		isValidating,
 
 		// Validation methods
 		validateFullName,
+		validateUsername,
 		validateEmail,
 		validatePassword,
 		validateConfirmPassword,
 		validateSignUpForm,
 		validateSignInForm,
+
+		// Async validation methods
+		validateAvailability,
 
 		// Utility methods
 		clearErrors,

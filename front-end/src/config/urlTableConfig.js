@@ -22,6 +22,13 @@ export const urlTableConfig = {
 			ellipsis: true,
 		},
 		{
+			title: 'Mô tả',
+			key: 'description',
+			dataIndex: 'description',
+			width: 200,
+			ellipsis: true,
+		},
+		{
 			title: 'Ngày tạo',
 			key: 'createdAt',
 			dataIndex: 'createdAt',
@@ -40,8 +47,9 @@ export const urlTableConfig = {
 
 	// Sort options
 	sortOptions: [
-		{ value: 'createdAt', label: 'Ngày tạo' },
-		{ value: 'shortUrl', label: 'URL ngắn' },
+		{ value: 'create_at', label: 'Ngày tạo', frontendField: 'createdAt' },
+		{ value: 'short_code', label: 'URL ngắn', frontendField: 'shortUrl' },
+		{ value: 'destination_url', label: 'URL đích', frontendField: 'originalUrl' },
 	],
 
 	// Sort order options
@@ -60,7 +68,19 @@ export const urlTableConfig = {
 		showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 	},
 
+	// API field mapping - maps frontend field names to backend API field names
+	apiFieldMapping: {
+		createdAt: 'create_at',
+		shortUrl: 'short_code',
+		originalUrl: 'destination_url',
+	},
+
+	// Default sort configuration for API
+	defaultSort: {
+		sortBy: 'create_at',
+		sortOrder: 'desc',
+	},
+
 	// Constants
 	BASE_URL: 'http://localhost/r/',
-	CURRENT_USER_ID: 1,
 }

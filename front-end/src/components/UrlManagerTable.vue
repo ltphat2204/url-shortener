@@ -9,44 +9,13 @@
 				</h1>
 					<p class="page-subtitle">
 						Tạo, quản lý và theo dõi các liên kết rút gọn của bạn
-					</p>
-				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
+					</p>				</div>			<a-button type="primary" size="large" @click="showModal" class="add-btn">
 				<template #icon>
-					<PlusOutlined />
+					<LinkOutlined />
 				</template>
-				Thêm URL mới
+				Tạo URL ngắn
 			</a-button>
 			</div>
-		</div>
-
-		<!-- Statistics Cards -->
-		<div class="stats-section">
-			<a-row :gutter="16">
-				<a-col :span="12">
-					<a-card class="stat-card">					<a-statistic
-						title="Tổng URL"
-						:value="apiMeta.totalItems || urls.length"
-						:value-style="{ color: '#1890ff' }"
-					>
-						<template #prefix>
-							<LinkOutlined />
-						</template>
-					</a-statistic>
-					</a-card>
-				</a-col>
-				<a-col :span="12">
-					<a-card class="stat-card">					<a-statistic
-						title="URL hoạt động"
-						:value="apiMeta.totalItems || urls.length"
-						:value-style="{ color: '#52c41a' }"
-					>
-						<template #prefix>
-							<CheckCircleOutlined />
-						</template>
-					</a-statistic>
-					</a-card>
-				</a-col>
-			</a-row>
 		</div>
 
 		<!-- Search và Filter -->
@@ -64,15 +33,23 @@
 						</template>
 					</a-input-search>
 					</a-col>
-					<a-col :span="6">
+					<a-col :span="2" class="sort-label-col">
+						<span class="sort-label">Sắp xếp theo:</span>
+					</a-col>
+					<a-col :span="4">
 						<a-select
 							v-model:value="sortBy"
-							placeholder="Sắp xếp theo"
+							placeholder="Chọn trường"
 							style="width: 100%"
 							@change="handleSort"
 						>
-							<a-select-option value="createdAt">Ngày tạo</a-select-option>
-							<a-select-option value="shortUrl">URL ngắn</a-select-option>
+							<a-select-option
+								v-for="option in urlTableConfig.sortOptions"
+								:key="option.value"
+								:value="option.value"
+							>
+								{{ option.label }}
+							</a-select-option>
 						</a-select>
 					</a-col>
 					<a-col :span="4">
@@ -85,7 +62,7 @@
 							<a-select-option value="asc">Tăng dần</a-select-option>
 						</a-select>
 					</a-col>
-					<a-col :span="6">
+					<a-col :span="4">
 						<a-space>						<a-button @click="handleRefresh" class="refresh-btn">
 							<template #icon>
 								<ReloadOutlined />
@@ -113,10 +90,11 @@
 			<a-card>
 				<a-table
 					:columns="columns"
-					:data-source="filteredUrls"
+					:data-source="urls"
 					:loading="loading"
 					:pagination="{
 						...paginationComputed,
+						showQuickJumper: false,
 						showTotal: (total, range) =>
 							`${range[0]}-${range[1]} / ${total} URL (Trang ${paginationComputed.current}/${Math.ceil(paginationComputed.total / paginationComputed.pageSize)})`,
 					}"
@@ -165,6 +143,15 @@
 							</a-tooltip>
 						</template>
 
+						<!-- Custom render cho cột Description -->
+						<template v-else-if="column.key === 'description'">
+							<a-tooltip :title="record.description">
+								<span class="description-cell">
+									{{ record.description || 'Không có mô tả' }}
+								</span>
+							</a-tooltip>
+						</template>
+
 						<!-- Custom render cho cột Created Date -->
 						<template v-else-if="column.key === 'createdAt'">
 							<div class="date-cell">
@@ -176,6 +163,17 @@
 						<!-- Custom render cho cột Actions -->
 						<template v-else-if="column.key === 'actions'">
 							<a-space size="small">
+								<a-tooltip title="Chia sẻ">
+									<a-button
+										size="small"
+										class="action-btn share-btn"
+										@click="shareUrl(record.shortUrl)"
+									>
+										<template #icon>
+											<ShareAltOutlined />
+										</template>
+									</a-button>
+								</a-tooltip>
 								<a-popconfirm
 									title="Bạn có chắc chắn muốn xóa URL này?"
 									ok-text="Có"
@@ -194,21 +192,6 @@
 										</a-button>
 									</a-tooltip>
 								</a-popconfirm>
-								<a-dropdown>
-									<a-button size="small" class="action-btn more-btn">
-										<template #icon>
-											<MoreOutlined />
-										</template>
-									</a-button>
-									<template #overlay>
-										<a-menu>
-											<a-menu-item @click="shareUrl(record.shortUrl)">
-												<ShareAltOutlined style="margin-right: 8px" />
-												Chia sẻ
-											</a-menu-item>
-										</a-menu>
-									</template>
-								</a-dropdown>
 							</a-space>
 						</template>
 					</template>
@@ -216,11 +199,11 @@
 			</a-card>
 		</div>
 
-		<!-- Modal thêm/sửa URL -->
+		<!-- Modal thêmURL -->
 		<a-modal
 			v-model:open="showAddModal"
-			:title="editTarget ? 'Chỉnh sửa URL' : 'Thêm URL mới'"
-			:ok-text="editTarget ? 'Cập nhật' : 'Thêm'"
+			title="Thêm URL mới"
+			ok-text="Thêm"
 			cancel-text="Hủy"
 			:confirm-loading="submitLoading"
 			@ok="handleSubmit"
@@ -255,25 +238,22 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import {
 	DeleteOutlined,
-	MoreOutlined,
 	ShareAltOutlined,
 	LinkOutlined,
-	PlusOutlined,
-	CheckCircleOutlined,
 	SearchOutlined,
 	ReloadOutlined,
 	CopyOutlined
 } from '@ant-design/icons-vue'
 import { useUrlManager } from '../composables/useUrlManager.js'
-import { useUrlFilter } from '../composables/useUrlFilter.js'
-import { useUrlForm } from '../composables/useUrlForm.js'
-import { urlTableUtils } from '../utils/urlTableUtils.js'
-import { urlTableConfig } from '../config/urlTableConfig.js'
-import { useTableEvents } from '../composables/useTableEvents.js'
+import { useUrlFilter } from '@/composables/useUrlFilter.js'
+import { useUrlForm } from '@/composables/useUrlForm.js'
+import { urlTableUtils } from '@/utils/urlTableUtils.js'
+import { urlTableConfig } from '@/config/urlTableConfig.js'
+import { useTableEvents } from '@/composables/useTableEvents.js'
 
 const emit = defineEmits(['urlAdded', 'urlUpdated', 'urlDeleted'])
 
@@ -282,7 +262,6 @@ const {
 	urls,
 	loading,
 	submitLoading,
-	apiMeta,
 	pagination,
 	loadUrlsFromAPI,
 	createUrl,
@@ -294,12 +273,10 @@ const {
 	searchText,
 	sortBy,
 	sortOrder,
-	getFilteredUrls,
 } = useUrlFilter()
 
 const {
 	showAddModal,
-	editTarget,
 	formRef,
 	form,
 	rules,
@@ -315,24 +292,15 @@ const {
 	handleSort,
 	handleRefresh,
 	handleTableChange,
-} = useTableEvents(pagination, loadUrlsFromAPI)
+} = useTableEvents(pagination, loadUrlsFromAPI, searchText, sortBy, sortOrder)
 
 // Configuration
 const { columns } = urlTableConfig
 
-const displayUrls = computed(() => {
-	return urls.value
-})
-
-const filteredUrls = computed(() => {
-	return getFilteredUrls(displayUrls.value)
-})
-
-// Computed để cập nhật pagination dựa trên filtered data
+// Computed để cập nhật pagination display
 const paginationComputed = computed(() => {
 	return {
 		...pagination.value,
-		total: filteredUrls.value.length,
 		showTotal: (total, range) =>
 			urlTableUtils.getPaginationText(total, range, pagination.value.current, pagination.value.pageSize),
 	}
@@ -343,17 +311,9 @@ const handleSubmit = async () => {
 		await validateForm()
 		submitLoading.value = true
 
-		if (editTarget.value) {
-			// Update existing URL - chưa implement vì backend chưa có API update
-			message.warning('Chức năng cập nhật đang được phát triển')
-		} else {
-			// Create new URL
-			await createUrl(form.value)
-		}
-
+		await createUrl(form.value)
 		closeModal()
-	} catch (error) {
-		console.error('Form validation failed:', error)
+	} catch {
 		message.error('Có lỗi xảy ra, vui lòng thử lại')
 	} finally {
 		submitLoading.value = false
@@ -371,12 +331,7 @@ const handleBatchDelete = async () => {
 const { copyToClipboard, shareUrl, formatDate, formatTime, truncateUrl } = urlTableUtils
 
 onMounted(() => {
-	loadUrlsFromAPI()
-})
-
-// Watch for search text changes to reset pagination
-watch(searchText, () => {
-	pagination.value.current = 1
+	loadUrlsFromAPI(1, 10, sortBy.value, sortOrder.value, searchText.value) // Load với parameters đầy đủ
 })
 </script>
 
@@ -385,7 +340,9 @@ watch(searchText, () => {
 	padding: 24px;
 	padding-top: 118px;
 	background: #f0f2f5;
-	min-height: calc(100vh - 94px);
+	min-height: 100vh;
+	width: 100%;
+	position: relative;
 }
 
 .header-section {
@@ -424,28 +381,44 @@ watch(searchText, () => {
 
 .add-btn {
 	height: 48px;
-	padding: 0 24px;
+	padding: 0 32px;
 	font-size: 16px;
-	font-weight: 500;
+	font-weight: 600;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	border: none;
+	box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+	transition: all 0.3s ease;
 }
 
-.stats-section {
-	margin-bottom: 24px;
-}
-
-.stat-card {
-	text-align: center;
-	transition: transform 0.2s;
-}
-
-.stat-card:hover {
+.add-btn:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+	background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+}
+
+.add-btn:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
 }
 
 .filter-section {
 	margin-bottom: 24px;
 }
+
+.sort-label-col {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding-right: 8px;
+}
+
+.sort-label {
+	font-weight: 500;
+	color: #333;
+	white-space: nowrap;
+}
+
 
 .table-section {
 	margin-bottom: 24px;
@@ -455,6 +428,11 @@ watch(searchText, () => {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+.description-cell {
+	color: #666;
+	font-size: 13px;
 }
 
 .short-url-link {
@@ -529,6 +507,19 @@ watch(searchText, () => {
 	color: white;
 }
 
+.share-btn {
+	background-color: #52c41a;
+	border-color: #52c41a;
+	color: white;
+}
+
+.share-btn:hover,
+.share-btn:focus {
+	background-color: #73d13d;
+	border-color: #73d13d;
+	color: white;
+}
+
 .more-btn {
 	border-color: #d9d9d9;
 	color: #666;
@@ -583,6 +574,16 @@ watch(searchText, () => {
 
 	.page-title {
 		font-size: 24px;
+	}
+
+	.sort-label-col {
+		justify-content: flex-start;
+		padding-right: 0;
+		margin-bottom: 8px;
+	}
+
+	.sort-label {
+		font-size: 14px;
 	}
 
 	:deep(.ant-table) {

@@ -1,5 +1,3 @@
-import { mockUsers, addMockUser } from '../mock/mockUsers.js'
-
 const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
 
 export class UserService {
@@ -83,105 +81,38 @@ export class UserService {
 	}
 
 	/**
-	 * Mock user management methods (for development/testing)
+	 * Check if email and username already exist
+	 * @param {Object} data - Data to check
+	 * @param {string} data.email - Email to check (optional)
+	 * @param {string} data.username - Username to check (optional)
+	 * @returns {Promise<Object>} - { emailExists: boolean, usernameExists: boolean }
 	 */
+	static async checkAvailability(data) {
+		try {
+			const params = new URLSearchParams()
+			if (data.email) {
+				params.append('email', data.email)
+			}
+			if (data.username) {
+				params.append('username', data.username)
+			}
 
-	/**
-	 * Check if email already exists in mock users
-	 * @param {string} email - Email to check
-	 * @returns {boolean} Whether email exists
-	 */
-	static emailExists(email) {
-		return mockUsers.some((user) => user.email === email)
-	}
+			const response = await fetch(`${API_BASE_URL}/users/exist?${params.toString()}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			})
 
-	/**
-	 * Check if username already exists in mock users
-	 * @param {string} username - Username to check
-	 * @returns {boolean} Whether username exists
-	 */
-	static usernameExists(username) {
-		return mockUsers.some((user) => user.username === username)
-	}
+			if (!response.ok) {
+				throw new Error(`Check availability failed: ${response.status}`)
+			}
 
-	/**
-	 * Create new mock user
-	 * @param {Object} userData - User data
-	 * @returns {Object} Created user
-	 */
-	static createMockUser(userData) {
-		const newUser = {
-			username: userData.username,
-			email: userData.email,
-			password: userData.password || '',
-			name: userData.name || userData.fullName || userData.username,
-			picture: userData.picture,
-			google_id: userData.google_id,
+			return await response.json()
+		} catch (error) {
+			console.error('Check availability error:', error)
+			return { emailExists: false, usernameExists: false }
 		}
-
-		addMockUser(newUser)
-		return newUser
-	}
-
-	/**
-	 * Find mock user by username
-	 * @param {string} username - Username to search
-	 * @returns {Object|null} Found user or null
-	 */
-	static findMockUserByUsername(username) {
-		return mockUsers.find((user) => user.username === username) || null
-	}
-
-	/**
-	 * Find mock user by email
-	 * @param {string} email - Email to search
-	 * @returns {Object|null} Found user or null
-	 */
-	static findMockUserByEmail(email) {
-		return mockUsers.find((user) => user.email === email) || null
-	}
-
-	/**
-	 * Verify mock user credentials
-	 * @param {string} username - Username
-	 * @param {string} password - User password
-	 * @returns {Object|null} User if valid, null if invalid
-	 */
-	static verifyMockCredentials(username, password) {
-		const user = this.findMockUserByUsername(username)
-		if (user && user.password === password) {
-			// Don't return password in response
-			// eslint-disable-next-line no-unused-vars
-			const { password: _, ...userWithoutPassword } = user
-			return userWithoutPassword
-		}
-		return null
-	}
-
-	/**
-	 * Create user from Google auth data
-	 * @param {Object} googleData - Google authentication data
-	 * @returns {Object} Created user
-	 */
-	static createUserFromGoogle(googleData) {
-		return this.createMockUser({
-			username: googleData.username || googleData.email?.split('@')[0],
-			email: googleData.email,
-			name: googleData.name,
-			picture: googleData.picture,
-			google_id: googleData.google_id,
-			password: '', // No password for Google users
-		})
-	}
-
-	/**
-	 * Check if mock user is Google user
-	 * @param {string} email - User email
-	 * @returns {boolean} Whether user is Google user
-	 */
-	static isMockGoogleUser(email) {
-		const user = this.findMockUserByEmail(email)
-		return !!(user && user.google_id)
 	}
 }
 

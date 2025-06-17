@@ -87,34 +87,70 @@ export function useOTPVerification() {
 		onOTPChange.value = callback
 	}
 
+	// Handle paste event for OTP
+	const handleOTPPaste = (event, index) => {
+		event.preventDefault()
+		const pastedData = event.clipboardData.getData('text').replace(/[^0-9]/g, '')
+
+		if (pastedData && pastedData.length > 0) {
+			if (pastedData.length === 6 && index === 0) {
+				otpDigits.value = ['', '', '', '', '', '']
+				const digits = pastedData.split('')
+				digits.forEach((digit, i) => {
+					if (i < 6) {
+						otpDigits.value[i] = digit
+					}
+				})
+
+				setTimeout(() => {
+					otpRefs.value[5]?.focus()
+				}, 0)
+			} else {
+				const digits = pastedData.split('').slice(0, 6 - index)
+
+				if (otpDigits.value[index] !== '') {
+					otpDigits.value[index] = ''
+				}
+
+				digits.forEach((digit, i) => {
+					if (index + i < 6) {
+						otpDigits.value[index + i] = digit
+					}
+				})
+
+				const nextIndex = Math.min(index + digits.length, 5)
+				setTimeout(() => {
+					otpRefs.value[nextIndex]?.focus()
+				}, 0)
+			}
+
+			otpString.value = otpDigits.value.join('')
+
+			if (onOTPChange.value) {
+				onOTPChange.value()
+			}
+		}
+	}
+
 	// Enhanced handleOTPInput with callback
 	const handleOTPInputWithCallback = (event, index) => {
 		let value = event.target.value.replace(/[^0-9]/g, '')
-		console.log(`Input at index ${index}:`, value)
 
-		// Handle multiple digits (paste case)
 		if (value.length > 1) {
-			// Split the value and fill multiple inputs
-			const digits = value.split('').slice(0, 6) // Max 6 digits
+			const digits = value.split('').slice(0, 6 - index)
 			digits.forEach((digit, i) => {
 				if (index + i < 6) {
 					otpDigits.value[index + i] = digit
 				}
 			})
 
-			// Focus the next empty input or the last filled input
 			const nextIndex = Math.min(index + digits.length, 5)
 			setTimeout(() => {
 				otpRefs.value[nextIndex]?.focus()
 			}, 0)
 		} else {
-			// Single digit
 			otpDigits.value[index] = value
 
-			// Update simple string version
-			otpString.value = otpDigits.value.join('')
-
-			// Auto-focus next input
 			if (value && index < 5) {
 				setTimeout(() => {
 					otpRefs.value[index + 1]?.focus()
@@ -122,7 +158,8 @@ export function useOTPVerification() {
 			}
 		}
 
-		// Call the callback to clear errors
+		otpString.value = otpDigits.value.join('')
+
 		if (onOTPChange.value) {
 			onOTPChange.value()
 		}
@@ -149,6 +186,7 @@ export function useOTPVerification() {
 		// Methods
 		handleOTPInput,
 		handleOTPKeydown,
+		handleOTPPaste,
 		resetOTP,
 		setGeneratedOTP,
 		verifyOTP,

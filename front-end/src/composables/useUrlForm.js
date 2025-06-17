@@ -2,7 +2,6 @@ import { ref } from 'vue'
 
 export function useUrlForm() {
 	const showAddModal = ref(false)
-	const editTarget = ref(null)
 	const formRef = ref()
 
 	const form = ref({
@@ -25,20 +24,9 @@ export function useUrlForm() {
 		showAddModal.value = true
 	}
 
-	// Show edit modal
-	const showEditModal = (url) => {
-		editTarget.value = url
-		form.value = {
-			originalUrl: url.originalUrl,
-			description: url.description || '',
-		}
-		showAddModal.value = true
-	}
-
 	// Close modal and reset form
 	const closeModal = () => {
 		showAddModal.value = false
-		editTarget.value = null
 		form.value = {
 			originalUrl: '',
 			description: '',
@@ -63,14 +51,12 @@ export function useUrlForm() {
 	return {
 		// State
 		showAddModal,
-		editTarget,
 		formRef,
 		form,
 		rules,
 
 		// Methods
 		showModal,
-		showEditModal,
 		closeModal,
 		validateForm,
 		resetForm,

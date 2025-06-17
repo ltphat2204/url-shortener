@@ -17,16 +17,16 @@
 import AppHeader from '@/components/AppHeader.vue'
 import UrlManagerTable from '@/components/UrlManagerTable.vue'
 
-const handleUrlAdded = (url) => {
-	console.log('URL đã được thêm:', url)
+const handleUrlAdded = () => {
+	// URL added successfully
 }
 
-const handleUrlUpdated = (url) => {
-	console.log('URL đã được cập nhật:', url)
+const handleUrlUpdated = () => {
+	// URL updated successfully
 }
 
-const handleUrlDeleted = (url) => {
-	console.log('URL đã được xóa:', url)
+const handleUrlDeleted = () => {
+	// URL deleted successfully
 }
 </script>
 

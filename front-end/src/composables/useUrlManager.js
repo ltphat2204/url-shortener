@@ -1,6 +1,7 @@
 import { ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import UrlService from '../services/urlService.js'
+import AuthService from '../services/authService.js'
 
 export function useUrlManager(emit) {
 	const urls = ref([])
@@ -12,8 +13,49 @@ export function useUrlManager(emit) {
 		currentPage: 1,
 		totalPages: 0,
 	})
+	// Get current user ID from session
+	const getCurrentUserId = () => {
+		const currentUser = AuthService.getCurrentUser()
+		const token = localStorage.getItem('token')
 
-	const CURRENT_USER_ID = 1
+		if (currentUser && currentUser.id) {
+			return currentUser.id
+		}
+
+		// Try to decode JWT token to get username
+		if (token) {
+			try {
+				const parts = token.split('.')
+				if (parts.length === 3) {
+					const payload = parts[1]
+					const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+					const tokenData = JSON.parse(decoded)
+
+					if (tokenData.sub) {
+						const userId = Math.abs(tokenData.sub.split('').reduce((hash, char) => {
+							return char.charCodeAt(0) + ((hash << 5) - hash)
+						}, 0)) % 100000 + 1000
+						return userId
+					}
+				}
+			} catch {
+				// Failed to decode JWT token
+			}
+		}
+
+		// Fallback: try to extract user ID from email or username
+		let identifier = currentUser?.email || currentUser?.username
+		if (identifier) {
+			// Create a consistent numeric ID from identifier
+			const userId = Math.abs(identifier.split('').reduce((hash, char) => {
+				return char.charCodeAt(0) + ((hash << 5) - hash)
+			}, 0)) % 100000 + 1000
+			return userId
+		}
+
+		return 1 // Ultimate fallback
+	}
+
 	const baseUrl = 'http://localhost/r/'
 
 	const pagination = ref({
@@ -24,12 +66,23 @@ export function useUrlManager(emit) {
 		showQuickJumper: true,
 		showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} URL`,
 	})
-	// Load URLs from API with fallback
-	const loadUrlsFromAPI = async () => {
+	// Load URLs from API với pagination, sorting và search
+	const loadUrlsFromAPI = async (page = null, pageSize = null, sortBy = 'create_at', sortOrder = 'desc', search = '') => {
 		try {
 			loading.value = true
 
-			const response = await UrlService.getUrlsWithFallback(CURRENT_USER_ID)
+			const currentUserId = getCurrentUserId()
+			const currentPage = page || pagination.value.current
+			const currentPageSize = pageSize || pagination.value.pageSize
+
+			const response = await UrlService.getUrlsWithFallback(
+				currentUserId,
+				currentPage,
+				currentPageSize,
+				sortBy,
+				sortOrder,
+				search
+			)
 
 			urls.value = response.data
 
@@ -39,46 +92,26 @@ export function useUrlManager(emit) {
 				pagination.value.current = response.meta.currentPage
 				pagination.value.pageSize = response.meta.itemsPerPage
 			}
-
-			// Show message based on data source
-			if (response.source === 'offline') {
-				message.warning('Đang sử dụng dữ liệu offline')
-			}
-		} catch (error) {
-			console.error('Error loading URLs:', error)
+		} catch {
 			message.error('Không thể tải danh sách URL')
-			// Load default mock data as last resort
-			loadMockData()
 		} finally {
 			loading.value = false
 		}
 	}
-	// Load mock data as fallback
-	const loadMockData = () => {
-		urls.value = UrlService.loadFromLocalStorage()
-		pagination.value.total = urls.value.length
-	}
-	// Save to localStorage
-	const saveToStorage = () => {
-		UrlService.saveToLocalStorage(urls.value)
-	}
-	// Create new URL with fallback
+
+	// Create new URL
 	const createUrl = async (formData) => {
 		try {
-			const result = await UrlService.createUrlWithFallback(formData, CURRENT_USER_ID)
+			const currentUserId = getCurrentUserId()
+			const result = await UrlService.createUrlWithFallback(formData, currentUserId)
 
 			if (result.success) {
-				if (result.source === 'api') {
-					message.success('Thêm URL thành công!')
-				} else {
-					message.success('Thêm URL thành công! (Offline mode)')
-				}
+				message.success('Thêm URL thành công!')
 				emit('urlAdded', result)
 				await loadUrlsFromAPI()
 				return true
 			}
-		} catch (error) {
-			console.error('Create URL error:', error)
+		} catch {
 			message.error('Có lỗi xảy ra khi tạo URL')
 		}
 		return false
@@ -109,12 +142,12 @@ export function useUrlManager(emit) {
 			} else {
 				message.error('Không thể xóa URL')
 			}
-		} catch (error) {
-			console.error('Delete URL error:', error)
-			message.error('Có lỗi xảy ra khi xóa URL')		}
+		} catch {
+			message.error('Có lỗi xảy ra khi xóa URL')
+		}
 	}
 
-	// Batch delete URLs with fallback
+	// Batch delete URLs
 	const batchDeleteUrls = async (selectedIds, selectedRowKeys) => {
 		try {
 			loading.value = true
@@ -136,12 +169,12 @@ export function useUrlManager(emit) {
 			}
 
 			await loadUrlsFromAPI()
-		} catch (error) {
-			console.error('Batch delete error:', error)
+		} catch {
 			message.error('Có lỗi xảy ra khi xóa URLs')
 		} finally {
 			loading.value = false
-		}	}
+		}
+	}
 
 	// Watch for pagination changes
 	watch([() => pagination.value.pageSize], () => {
@@ -157,13 +190,11 @@ export function useUrlManager(emit) {
 		pagination,
 
 		// Constants
-		CURRENT_USER_ID,
+		getCurrentUserId,
 		baseUrl,
 
 		// Methods
 		loadUrlsFromAPI,
-		loadMockData,
-		saveToStorage,
 		createUrl,
 		deleteUrl,
 		batchDeleteUrls,

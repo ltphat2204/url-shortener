@@ -106,6 +106,17 @@ export class AuthService {
 	 * @param {string} token - Authentication token
 	 */
 	static saveUserSession(userObject, token) {
+		// Ensure user object has an ID using consistent logic
+		if (!userObject.id) {
+			const identifier = userObject.email || userObject.username
+			if (identifier) {
+				// Use same hash logic as getCurrentUserId for consistency
+				userObject.id = Math.abs(identifier.split('').reduce((hash, char) => {
+					return char.charCodeAt(0) + ((hash << 5) - hash)
+				}, 0)) % 100000 + 1000
+			}
+		}
+
 		localStorage.setItem('user', JSON.stringify(userObject))
 		localStorage.setItem('token', token)
 	}

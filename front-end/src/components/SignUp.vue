@@ -28,33 +28,55 @@
 
 						<div class="form-group">
 							<label for="username">Tên đăng nhập</label>
-							<input
-								type="text"
-								id="username"
-								v-model="signUpForm.username"
-								:class="{ error: errors.username }"
-								placeholder="Nhập tên đăng nhập"
-								autocomplete="username"
-								required
-							/>
-							<span v-if="errors.username" class="error-message">{{
-								errors.username
+							<div class="input-with-validation">
+								<input
+									type="text"
+									id="username"
+									v-model="signUpForm.username"
+									:class="usernameInputClass"
+									placeholder="Nhập tên đăng nhập"
+									autocomplete="username"
+									@blur="handleFieldBlur('username')"
+									required
+								/>
+								<div class="validation-indicator" v-if="usernameValidation.isValidating">
+									<div class="spinner"></div>
+								</div>
+								<div class="validation-indicator success" v-else-if="usernameValidation.isAvailable === true">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<polyline points="20,6 9,17 4,12"></polyline>
+									</svg>
+								</div>
+							</div>
+							<span v-if="getUsernameError" class="error-message">{{
+								getUsernameError
 							}}</span>
 						</div>
 
 						<div class="form-group">
 							<label for="email">Email</label>
-							<input
-								type="email"
-								id="email"
-								v-model="signUpForm.email"
-								:class="{ error: errors.email }"
-								placeholder="Nhập email của bạn"
-								autocomplete="email"
-								required
-							/>
-							<span v-if="errors.email" class="error-message">{{
-								errors.email
+							<div class="input-with-validation">
+								<input
+									type="email"
+									id="email"
+									v-model="signUpForm.email"
+									:class="emailInputClass"
+									placeholder="Nhập email của bạn"
+									autocomplete="email"
+									@blur="handleFieldBlur('email')"
+									required
+								/>
+								<div class="validation-indicator" v-if="emailValidation.isValidating">
+									<div class="spinner"></div>
+								</div>
+								<div class="validation-indicator success" v-else-if="emailValidation.isAvailable === true">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<polyline points="20,6 9,17 4,12"></polyline>
+									</svg>
+								</div>
+							</div>
+							<span v-if="getEmailError" class="error-message">{{
+								getEmailError
 							}}</span>
 						</div>
 
@@ -175,10 +197,20 @@
 						</div>
 
 						<div class="form-actions">
-							<button type="submit" :disabled="loading" class="btn-primary">
+							<button type="submit" :disabled="loading || !canSubmitForm" class="btn-primary">
 								<span v-if="loading" class="loading-spinner"></span>
 								{{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
 							</button>
+
+							<!-- Validation hint for user -->
+							<div v-if="!canSubmitForm" class="validation-hint">
+								<small v-if="getEmailError || getUsernameError">
+									Vui lòng sửa lỗi trước khi tiếp tục
+								</small>
+								<small v-else-if="emailValidation.isAvailable === false || usernameValidation.isAvailable === false">
+									Email hoặc tên đăng nhập đã được sử dụng
+								</small>
+							</div>
 						</div>
 					</form>
 
@@ -223,10 +255,10 @@
 								type="text"
 								inputmode="numeric"
 								pattern="[0-9]*"
-								maxlength="1"
 								:value="otpDigits[index]"
 								@input="handleOTPInputWithAutoSubmit($event, index)"
 								@keydown="handleOTPKeydown($event, index)"
+								@paste="handleOTPPasteWithAutoSubmit($event, index)"
 								class="otp-input"
 								autocomplete="one-time-code"
 							/>
@@ -261,19 +293,7 @@
 				<!-- Step 3: Success -->
 				<div v-else-if="currentStep === 3" class="success-message">
 					<div class="success-icon">
-						<svg
-							width="64"
-							height="64"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-							<polyline points="22,4 12,14.01 9,11.01" />
-						</svg>
+						<CheckCircleOutlined />
 					</div>
 					<h3>Đăng ký thành công!</h3>
 					<p>
@@ -300,9 +320,12 @@
 </template>
 
 <script setup>
+import { CheckCircleOutlined } from '@ant-design/icons-vue'
 import GoogleAuthButton from './GoogleAuthButton.vue'
-import { useAuthentication } from '../composables/useAuthentication.js'
-import { useOTPVerification } from '../composables/useOTPVerification.js'
+import { useAuthentication } from '@/composables/useAuthentication.js'
+import { useOTPVerification } from '@/composables/useOTPVerification.js'
+import { useRealTimeValidation } from '@/composables/useRealTimeValidation'
+import { onMounted, computed } from 'vue'
 
 // Use composables
 const {
@@ -328,6 +351,7 @@ const {
 	resendLoading,
 	handleOTPInputWithCallback,
 	handleOTPKeydown,
+	handleOTPPaste,
 	setGeneratedOTP,
 	verifyOTP,
 	resetOTP,
@@ -335,6 +359,70 @@ const {
 	stopOTPCountdown,
 	setOTPChangeCallback,
 } = useOTPVerification()
+
+// Real-time validation
+const {
+	emailValidation,
+	usernameValidation,
+	validateBothOnBlur,
+	validateEmailOnBlur,
+	validateUsernameOnBlur,
+	watchEmailValidation,
+	watchUsernameValidation
+} = useRealTimeValidation()
+
+// Setup real-time validation watchers
+onMounted(() => {
+	watchEmailValidation(computed(() => signUpForm.value.email))
+	watchUsernameValidation(computed(() => signUpForm.value.username))
+})
+
+const handleFieldBlur = (field) => {
+	const email = signUpForm.value.email
+	const username = signUpForm.value.username
+
+	if (email && email.trim() && username && username.trim()) {
+		validateBothOnBlur(email, username)
+	} else {
+		if (field === 'email') {
+			validateEmailOnBlur(email)
+		} else if (field === 'username') {
+			validateUsernameOnBlur(username)
+		}
+	}
+}
+
+const emailInputClass = computed(() => ({
+	error: errors.value.email || emailValidation.value.error,
+	validating: emailValidation.value.isValidating,
+	success: emailValidation.value.isAvailable === true
+}))
+
+const usernameInputClass = computed(() => ({
+	error: errors.value.username || usernameValidation.value.error,
+	validating: usernameValidation.value.isValidating,
+	success: usernameValidation.value.isAvailable === true
+}))
+
+const getEmailError = computed(() => {
+	return errors.value.email || emailValidation.value.error
+})
+
+const getUsernameError = computed(() => {
+	return errors.value.username || usernameValidation.value.error
+})
+
+// Check if form should be disabled
+const canSubmitForm = computed(() => {
+	if (getEmailError.value || getUsernameError.value) {
+		return false
+	}
+
+	if (emailValidation.value.isAvailable === false || usernameValidation.value.isAvailable === false) {
+		return false
+	}
+	return true
+})
 
 // Connect the two composables
 setOTPMethods({
@@ -357,17 +445,50 @@ const handleOTPInputWithAutoSubmit = (event, index) => {
 	}, 100)
 }
 
+// Handle OTP paste with auto-submit when complete
+const handleOTPPasteWithAutoSubmit = (event, index) => {
+	handleOTPPaste(event, index)
+	// Auto-submit when OTP is complete
+	setTimeout(() => {
+		if (isOTPComplete.value) {
+			handleOTPVerification()
+		}
+	}, 100)
+}
+
 // Wrapper for signup form submission
 const onSubmitSignUp = async () => {
+	const email = signUpForm.value.email
+	const username = signUpForm.value.username
+
+	if (!email || !email.trim() || !username || !username.trim()) {
+		if (email && email.trim()) {
+			await validateEmailOnBlur(email)
+		}
+		if (username && username.trim()) {
+			await validateUsernameOnBlur(username)
+		}
+		return
+	}
+
+	if (!canSubmitForm.value) {
+		return
+	}
+
+	if (emailValidation.value.isAvailable === null || usernameValidation.value.isAvailable === null) {
+		await validateBothOnBlur(email, username)
+		if (!canSubmitForm.value) {
+			return
+		}
+	}
+
 	await handleSignUp()
 }
 
-// Wrapper for OTP verification
 const onVerifyOTP = async () => {
 	await handleOTPVerification()
 }
 
-// Wrapper for resend OTP
 const onResendOTP = async () => {
 	resendLoading.value = true
 	try {
@@ -528,6 +649,8 @@ const onResendOTP = async () => {
 	padding: 0 16px;
 	color: #666;
 	font-size: 14px;
+	position: relative;
+	z-index: 1;
 }
 
 .error-message {
@@ -670,14 +793,74 @@ const onResendOTP = async () => {
 	text-decoration: underline;
 }
 
+/* Validation hint styles */
+.validation-hint {
+	margin-top: 8px;
+	text-align: center;
+}
+
+.validation-hint small {
+	color: #ff6b6b;
+	font-size: 12px;
+	font-style: italic;
+}
+
 /* Success Message Styles */
 .success-message {
 	text-align: center;
 }
 
+/* Input with validation styles */
+.input-with-validation {
+	position: relative;
+}
+
+.input-with-validation input {
+	padding-right: 40px;
+}
+
+.input-with-validation input.success {
+	border-color: #52c41a;
+}
+
+.input-with-validation input.validating {
+	border-color: #1890ff;
+}
+
+.validation-indicator {
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+}
+
+.validation-indicator.success {
+	color: #52c41a;
+}
+
+.spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid #f3f3f3;
+	border-top: 2px solid #1890ff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
 .success-icon {
 	font-size: 64px;
 	margin-bottom: 20px;
+	color: #52c41a; /* Ant Design success green */
 }
 
 .success-message h3 {
@@ -695,6 +878,7 @@ const onResendOTP = async () => {
 
 .auth-footer {
 	text-align: center;
+	margin-top: 20px;
 }
 
 .auth-footer p {

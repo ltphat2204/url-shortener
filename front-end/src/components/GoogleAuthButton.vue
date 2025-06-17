@@ -15,6 +15,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import GoogleAuthService from '../services/googleAuthService.js'
 
 // Props
 defineProps({
@@ -27,23 +28,17 @@ defineProps({
 // State
 const isLoading = ref(false)
 
-// Get backend URL from environment or default to API Gateway
-const GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
-
 /**
  * Redirect to Google OAuth2 authorization endpoint
  */
 const signInWithGoogle = () => {
-	isLoading.value = true
-
-	// Save current page to return after auth
-	localStorage.setItem('oauth_return_url', window.location.pathname)
-
-	// Set flag to indicate OAuth is pending
-	sessionStorage.setItem('oauth_pending', 'true')
-
-	// Redirect to backend OAuth2 endpoint through API Gateway
-	window.location.href = `${GATEWAY_URL}/users/oauth2/authorization/google`
+	try {
+		isLoading.value = true
+		GoogleAuthService.signInWithOAuth2()
+	} catch (error) {
+		console.error('Error signing in with Google:', error)
+		isLoading.value = false
+	}
 }
 </script>
 
