@@ -1,6 +1,24 @@
-import emailjs from 'emailjs-com'
+import emailjs from '@emailjs/browser'
 
 export class AuthService {
+	/**
+	 * Initialize EmailJS with User ID
+	 */
+	static initEmailJS() {
+		if (!this._emailjsInitialized) {
+			const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+			if (!publicKey) {
+				console.error('VITE_EMAILJS_PUBLIC_KEY is not defined in environment variables')
+				throw new Error('EmailJS configuration is missing')
+			}
+
+			console.log('Initializing EmailJS with public key:', publicKey.substring(0, 5) + '...')
+			emailjs.init(publicKey)
+			this._emailjsInitialized = true
+		}
+	}
+
 	/**
 	 * Send OTP email
 	 * @param {string} email - Recipient email
@@ -8,19 +26,46 @@ export class AuthService {
 	 * @returns {Promise<string>} Generated OTP
 	 */
 	static async sendOTP(email, fullName) {
+		// Debug environment variables
+		console.log('Raw environment variables:', {
+			NODE_ENV: import.meta.env.NODE_ENV,
+			MODE: import.meta.env.MODE,
+			PROD: import.meta.env.PROD,
+			DEV: import.meta.env.DEV,
+		})
+
+		// Validate environment variables first
+		const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+		const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+		const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+		console.log('EmailJS Environment Check:', {
+			serviceId: serviceId ? serviceId.substring(0, 5) + '...' : 'MISSING',
+			templateId: templateId ? templateId.substring(0, 5) + '...' : 'MISSING',
+			publicKey: publicKey ? publicKey.substring(0, 5) + '...' : 'MISSING',
+		})
+
+		if (!serviceId || !templateId || !publicKey) {
+			const missing = []
+			if (!serviceId) missing.push('VITE_EMAILJS_SERVICE_ID')
+			if (!templateId) missing.push('VITE_EMAILJS_TEMPLATE_ID')
+			if (!publicKey) missing.push('VITE_EMAILJS_PUBLIC_KEY')
+
+			console.error('Missing EmailJS environment variables:', missing)
+			throw new Error(`Missing environment variables: ${missing.join(', ')}`)
+		}
+
+		// Initialize EmailJS first
+		this.initEmailJS()
+
 		const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
 		try {
-			await emailjs.send(
-				import.meta.env.VITE_EMAILJS_SERVICE_ID,
-				import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-				{
-					email: email,
-					otp: otp,
-					to_name: fullName || email,
-				},
-				import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-			)
+			await emailjs.send(serviceId, templateId, {
+				email: email,
+				otp: otp,
+				to_name: fullName || email,
+			})
 
 			return otp
 		} catch (error) {
@@ -177,5 +222,8 @@ export class AuthService {
 		)
 	}
 }
+
+// Static property to track EmailJS initialization
+AuthService._emailjsInitialized = false
 
 export default AuthService

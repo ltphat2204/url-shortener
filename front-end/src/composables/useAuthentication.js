@@ -102,14 +102,11 @@ export function useAuthentication() {
 
 		try {
 			if (otpMethods?.verifyOTP()) {
-				// Call backend API to register user
 				await UserService.register({
 					username: signUpForm.value.username,
 					email: signUpForm.value.email,
 					password: signUpForm.value.password,
 				})
-
-				// Move to success step
 				nextStep()
 				otpMethods?.stopOTPCountdown()
 			} else {
