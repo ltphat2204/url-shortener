@@ -12,6 +12,7 @@ services:
       - "traefik.http.routers.redirect-service.middlewares=redirect-stripprefix"
       - "traefik.http.middlewares.redirect-stripprefix.stripprefix.prefixes=/r"
       - "traefik.http.services.redirect-service.loadbalancer.server.port=8080"
+    restart: unless-stopped
 
 networks:
   url-shortener-net: 

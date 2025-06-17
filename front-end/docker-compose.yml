@@ -6,7 +6,7 @@ services:
       target: production
 
     env_file:
-      - .env
+      - .env.production
 
     ports:
       - "3030:80"

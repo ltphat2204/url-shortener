@@ -33,8 +33,8 @@ user-service:
 	cd ..
 
 frontend:
-	@echo "Building frontend..."
-	@cd frontend &&\
+	@echo "Building front-end..."
+	@cd front-end &&\
 	make up &&\
 	cd ..
 
@@ -52,6 +52,6 @@ clean:
 	@cd redirect-service && make down && cd ..
 	@cd url-service && make down && cd ..
 	@cd user-service && make down && cd ..
-	@cd frontend && make down && cd ..
+	@cd front-end && make down && cd ..
 	@cd cache && make down && cd ..
 	@echo "All services cleaned up."

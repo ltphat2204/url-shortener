@@ -6,7 +6,7 @@ BUILD_DIR    := dist
 BUN          := bun
 
 # This Makefile assumes a .env file is present for service config (for Docker).
-ENV_FILE     := .env
+ENV_FILE     := .env.production
 
 # --- Cross-Platform Helpers ---
 # Set the correct 'remove directory' command based on the operating system
@@ -85,7 +85,7 @@ lint:
 
 $(ENV_FILE):
 	@if [ ! -f "$@" ]; then \
-		echo "==> WARNING: .env file not found. It might be required by your Docker setup."; \
+		echo "==> WARNING: .env.production file not found. It might be required by your Docker setup."; \
 	fi
 
 up: $(ENV_FILE)
