@@ -16,7 +16,7 @@ export class UserService {
 			},
 			body: JSON.stringify({
 				username: loginData.username,
-				password: loginData.password
+				password: loginData.password,
 			}),
 		})
 
@@ -45,7 +45,7 @@ export class UserService {
 			body: JSON.stringify({
 				username: registerData.username,
 				email: registerData.email,
-				password: registerData.password
+				password: registerData.password,
 			}),
 		})
 
@@ -68,7 +68,7 @@ export class UserService {
 			const response = await fetch(`${API_BASE_URL}/users/token/validate`, {
 				method: 'GET',
 				headers: {
-					'Authorization': `Bearer ${token}`,
+					Authorization: `Bearer ${token}`,
 					'Content-Type': 'application/json',
 				},
 			})

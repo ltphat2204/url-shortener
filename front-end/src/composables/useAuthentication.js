@@ -79,16 +79,12 @@ export function useAuthentication() {
 			}
 
 			// Send OTP directly (backend will validate duplicates during registration)
-			const otp = await AuthService.sendOTP(
-				signUpForm.value.email,
-				signUpForm.value.fullName
-			)
+			const otp = await AuthService.sendOTP(signUpForm.value.email, signUpForm.value.fullName)
 			otpMethods?.setGeneratedOTP(otp)
 
 			// Move to OTP verification step
 			nextStep()
 			otpMethods?.startOTPCountdown()
-
 		} catch (error) {
 			console.error('Sign up error:', error)
 			errors.value.general = error.message || 'Có lỗi xảy ra, vui lòng thử lại'
@@ -110,7 +106,7 @@ export function useAuthentication() {
 				await UserService.register({
 					username: signUpForm.value.username,
 					email: signUpForm.value.email,
-					password: signUpForm.value.password
+					password: signUpForm.value.password,
 				})
 
 				// Move to success step
@@ -143,7 +139,7 @@ export function useAuthentication() {
 			// Call backend API to login
 			const result = await UserService.login({
 				username: signInForm.value.username,
-				password: signInForm.value.password
+				password: signInForm.value.password,
 			})
 
 			if (result && result.token) {
@@ -164,7 +160,6 @@ export function useAuthentication() {
 			} else {
 				errors.value.general = 'Đăng nhập thất bại'
 			}
-
 		} catch (error) {
 			console.error('Sign in error:', error)
 			errors.value.general = error.message || 'Tên đăng nhập hoặc mật khẩu không đúng'
@@ -178,10 +173,7 @@ export function useAuthentication() {
 	 */
 	const handleResendOTP = async () => {
 		try {
-			const otp = await AuthService.sendOTP(
-				signUpForm.value.email,
-				signUpForm.value.fullName
-			)
+			const otp = await AuthService.sendOTP(signUpForm.value.email, signUpForm.value.fullName)
 			otpMethods?.setGeneratedOTP(otp)
 			otpMethods?.resetOTP()
 			otpMethods?.startOTPCountdown()

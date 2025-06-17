@@ -12,7 +12,14 @@ export class UrlService {
 	 * @param {string} search - Từ khóa tìm kiếm (optional)
 	 * @returns {Promise<Object>} - API Response với data và meta
 	 */
-	static async getUrlsByUserId(userId, page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '') {
+	static async getUrlsByUserId(
+		userId,
+		page = 1,
+		limit = 10,
+		sortBy = 'create_at',
+		sortOrder = 'desc',
+		search = '',
+	) {
 		const userIdNum = parseInt(userId) || 1
 
 		let url = `${API_BASE_URL}/url/user/${userIdNum}?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`
@@ -177,17 +184,31 @@ export class UrlService {
 	 * @param {string} search - Từ khóa tìm kiếm
 	 * @returns {Promise<Object>} - API response
 	 */
-	static async getUrlsWithFallback(userId, page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '') {
-		const apiResponse = await this.getUrlsByUserId(userId, page, limit, sortBy, sortOrder, search)
+	static async getUrlsWithFallback(
+		userId,
+		page = 1,
+		limit = 10,
+		sortBy = 'create_at',
+		sortOrder = 'desc',
+		search = '',
+	) {
+		const apiResponse = await this.getUrlsByUserId(
+			userId,
+			page,
+			limit,
+			sortBy,
+			sortOrder,
+			search,
+		)
 
 		if (apiResponse.data) {
 			// Map data từ backend format
-			const mappedUrls = apiResponse.data.map(url => this.mapBackendUrlToFrontend(url))
+			const mappedUrls = apiResponse.data.map((url) => this.mapBackendUrlToFrontend(url))
 
 			return {
 				data: mappedUrls,
 				meta: apiResponse.meta,
-				source: 'api'
+				source: 'api',
 			}
 		}
 
@@ -206,7 +227,7 @@ export class UrlService {
 		return {
 			...result,
 			source: 'api',
-			success: true
+			success: true,
 		}
 	}
 
@@ -220,7 +241,7 @@ export class UrlService {
 		return {
 			success: true,
 			source: 'api',
-			url: url
+			url: url,
 		}
 	}
 
@@ -233,7 +254,7 @@ export class UrlService {
 		const results = {
 			successful: [],
 			failed: [],
-			errors: []
+			errors: [],
 		}
 
 		const deletePromises = urlsToDelete.map(async (url) => {

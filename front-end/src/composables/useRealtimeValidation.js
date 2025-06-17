@@ -8,13 +8,13 @@ export function useRealTimeValidation() {
 	const emailValidation = ref({
 		error: '',
 		isValidating: false,
-		isAvailable: null
+		isAvailable: null,
 	})
 
 	const usernameValidation = ref({
 		error: '',
 		isValidating: false,
-		isAvailable: null
+		isAvailable: null,
 	})
 	// Combined validation function - only check when BOTH fields have values
 	const validateBothOnBlur = async (email, username) => {
@@ -154,7 +154,7 @@ export function useRealTimeValidation() {
 		emailValidation.value = {
 			error: '',
 			isValidating: false,
-			isAvailable: null
+			isAvailable: null,
 		}
 	}
 
@@ -162,7 +162,7 @@ export function useRealTimeValidation() {
 		usernameValidation.value = {
 			error: '',
 			isValidating: false,
-			isAvailable: null
+			isAvailable: null,
 		}
 	}
 
@@ -178,6 +178,6 @@ export function useRealTimeValidation() {
 		watchEmailValidation,
 		watchUsernameValidation,
 		clearEmailValidation,
-		clearUsernameValidation
+		clearUsernameValidation,
 	}
 }
