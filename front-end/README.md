@@ -35,10 +35,6 @@ VITE_EMAILJS_PRIVATE_KEY=your_private_key
 VITE_EMAILJS_SERVICE_ID=your_service_id
 VITE_EMAILJS_TEMPLATE_ID=your_template_id
 
-# Google OAuth
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret
-
 # API
 VITE_API_GATEWAY_BASE_URL=http://localhost
 ```
