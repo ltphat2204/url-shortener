@@ -7,7 +7,7 @@ export class GoogleAuthService {
 	static signInWithOAuth2(returnUrl = null) {
 		try {
 			// Get backend URL from environment or default to API Gateway
-			const GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
+			const GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL
 
 			// Save current page to return after auth (if provided)
 			if (returnUrl) {
@@ -37,13 +37,7 @@ export class GoogleAuthService {
 		return returnUrl
 	}
 
-	/**
-	 * Check if OAuth is pending
-	 * @returns {boolean} OAuth pending status
-	 */
-	static isOAuthPending() {
-		return sessionStorage.getItem('oauth_pending') === 'true'
-	}
+
 
 	/**
 	 * Clear OAuth pending flag

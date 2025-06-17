@@ -1,5 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
-const SHORT_URL_BASE = import.meta.env.VITE_SHORT_URL_BASE || 'http://localhost/r/'
+const SHORT_URL_BASE = 'http://localhost/r/'
+
+// Cấu hình chung cho fetch requests để xử lý CORS
+const DEFAULT_FETCH_OPTIONS = {
+	mode: 'cors',
+	credentials: 'include',
+	headers: {
+		'Content-Type': 'application/json',
+		'Accept': 'application/json',
+	}
+}
 
 export class UrlService {
 	/**
@@ -29,7 +39,10 @@ export class UrlService {
 			url += `&search=${encodeURIComponent(search.trim())}`
 		}
 
-		const response = await fetch(url)
+		const response = await fetch(url, {
+			...DEFAULT_FETCH_OPTIONS,
+			method: 'GET'
+		})
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`)
@@ -59,10 +72,8 @@ export class UrlService {
 		}
 
 		const response = await fetch(`${API_BASE_URL}/url`, {
+			...DEFAULT_FETCH_OPTIONS,
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
 			body: JSON.stringify(requestData),
 		})
 
@@ -75,7 +86,6 @@ export class UrlService {
 		const responseData = await response.json()
 		const newShortRecord = responseData.new_short_record
 
-		// Trả về object với thông tin đầy đủ để dễ sử dụng
 		return {
 			id: newShortRecord.id,
 			shortCode: newShortRecord.short_url,
@@ -87,28 +97,6 @@ export class UrlService {
 		}
 	}
 
-	/**
-	 * Cập nhật URL theo short code
-	 * @param {string} shortCode - Short code của URL cần cập nhật
-	 * @param {Object} urlData - Dữ liệu URL cần cập nhật
-	 * @returns {Promise<Object>} - Thông tin URL đã cập nhật
-	 */
-	static async updateUrl(shortCode, urlData) {
-		const response = await fetch(`${API_BASE_URL}/url/${shortCode}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(urlData),
-		})
-
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}))
-			throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-		}
-
-		return await response.json()
-	}
 
 	/**
 	 * Xóa URL theo short code
@@ -116,6 +104,7 @@ export class UrlService {
 	 * @returns {Promise<void>}
 	 */ static async deleteUrl(shortCode) {
 		const response = await fetch(`${API_BASE_URL}/url/${shortCode}`, {
+			...DEFAULT_FETCH_OPTIONS,
 			method: 'DELETE',
 		})
 
@@ -124,19 +113,7 @@ export class UrlService {
 		}
 	}
 
-	/**
-	 * Lấy thông tin URL theo short code
-	 * @param {string} shortCode - Short code của URL
-	 * @returns {Promise<Object>} - Thông tin URL
-	 */ static async getUrlByShortCode(shortCode) {
-		const response = await fetch(`${API_BASE_URL}/url/${shortCode}`)
 
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`)
-		}
-
-		return await response.json()
-	}
 
 	/**
 	 * Map dữ liệu từ backend format sang frontend format
