@@ -16,12 +16,6 @@ services:
       - "traefik.http.routers.url-service.entrypoints=web"
       - "traefik.http.services.url-service.loadbalancer.server.port=3000"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
   mongodb:
     image: mongo:latest
