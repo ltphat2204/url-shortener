@@ -3,7 +3,6 @@ const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localh
 // Cấu hình chung cho fetch requests để xử lý CORS
 const DEFAULT_FETCH_OPTIONS = {
 	mode: 'cors',
-	credentials: 'include',
 	headers: {
 		'Content-Type': 'application/json',
 		'Accept': 'application/json',

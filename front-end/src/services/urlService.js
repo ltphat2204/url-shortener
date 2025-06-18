@@ -4,7 +4,6 @@ const SHORT_URL_BASE = 'http://localhost/r/'
 // Cấu hình chung cho fetch requests để xử lý CORS
 const DEFAULT_FETCH_OPTIONS = {
 	mode: 'cors',
-	credentials: 'include',
 	headers: {
 		'Content-Type': 'application/json',
 		'Accept': 'application/json',
