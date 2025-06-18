@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  namespace: url-shortener
+spec:
+  ports:
+  - port: 27017
+    name: mongo
+  clusterIP: None #Đánh dấu đây là Headless Service
+  selector:
+    app: mongodb
+---
+# StatefulSet: Dành cho các ứng dụng cần state (trạng thái) và định danh mạng ổn định.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: url-shortener
+spec:
+  # Tên của Headless Service dùng để quản lý domain cho các Pod
+  serviceName: "mongodb-service"
+  replicas: 1 # Bắt đầu với 1 replica, có thể tăng lên 3 để có replica set thực sự
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        imagePullPolicy: IfNotPresent
+        # Lệnh để khởi động MongoDB như một replica set
+        command:
+          - "mongod"
+          - "--bind_ip_all"
+          - "--replSet"
+          - "rs0"
+        ports:
+        - containerPort: 27017
+          name: mongo
+        # Mount volume vào đường dẫn dữ liệu của MongoDB
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+        # Kiểm tra xem MongoDB đã sẵn sàng nhận kết nối chưa
+        readinessProbe:
+          exec:
+            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+  # VolumeClaimTemplates: Tự động tạo một PVC cho mỗi Pod mà StatefulSet tạo ra.
+  # Pod 'mongodb-0' sẽ có PVC là 'mongodb-data-mongodb-0'.
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi # Yêu cầu 2GB dung lượng lưu trữ

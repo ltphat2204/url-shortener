@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-service-deployment
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: url-service
+  template:
+    metadata:
+      labels:
+        app: url-service
+    spec:
+      containers:
+      - name: url-service
+        image: url-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: database-url
+        - name: REDIRECT_SERVICE_URL
+          valueFrom:
+            secretKeyRef:
+              name: url-service-secret
+              key: REDIRECT_SERVICE_URL

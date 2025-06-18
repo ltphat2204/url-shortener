@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: url-service-ingress
+  namespace: url-shortener
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /url
+        pathType: Prefix
+        backend:
+          service:
+            name: url-service
+            port:
+              name: http

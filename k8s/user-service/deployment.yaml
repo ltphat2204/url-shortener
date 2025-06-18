@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service-deployment
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+    spec:
+      containers:
+      - name: users-service
+        image: users-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: users-service-secret
+        - secretRef:
+            name: postgres-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: url-shortener
+spec:
+  selector:
+    app: users-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
