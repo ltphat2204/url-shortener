@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: localhost.com
+  - host: localhost
     http:
       paths:
       - path: /r
