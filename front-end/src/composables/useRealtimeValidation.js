@@ -59,7 +59,6 @@ export function useRealTimeValidation() {
 		try {
 			const result = await validateAvailability(email.trim(), username.trim())
 
-			// Handle email result
 			if (result.emailExists) {
 				emailValidation.value.error = 'Email này đã được sử dụng'
 				emailValidation.value.isAvailable = false
@@ -67,7 +66,6 @@ export function useRealTimeValidation() {
 				emailValidation.value.isAvailable = true
 			}
 
-			// Handle username result
 			if (result.usernameExists) {
 				usernameValidation.value.error = 'Tên đăng nhập này đã được sử dụng'
 				usernameValidation.value.isAvailable = false
@@ -114,23 +112,18 @@ export function useRealTimeValidation() {
 			usernameValidation.value.isAvailable = null
 		} else {
 			usernameValidation.value.error = ''
-			// Note: No API call here since we need both email and username
 		}
 	}
 
 	// Watch functions - only clear errors when typing, don't validate immediately
 	const watchEmailValidation = (emailRef) => {
 		watch(emailRef, (newEmail) => {
-			// Clear availability status when user types
 			if (emailValidation.value.isAvailable !== null) {
 				emailValidation.value.isAvailable = null
 			}
-
-			// Only clear error if field becomes empty, don't validate while typing
 			if (!newEmail || !newEmail.trim()) {
 				emailValidation.value.error = ''
 			}
-			// Don't validate while user is typing - wait for blur event
 		})
 	}
 

@@ -4,17 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bunx --bun vite",
-    "build": "bunx --bun vite build",
-    "preview": "bunx --bun vite preview",
-    "test:unit": "bunx vitest",
-    "lint": "bunx eslint . --fix",
-    "format": "bunx prettier --write src/"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@emailjs/browser": "^4.4.1",
     "ant-design-vue": "4.x",
-    "emailjs-com": "^3.2.0",
     "pinia": "^3.0.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",

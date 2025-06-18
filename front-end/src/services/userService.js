@@ -1,5 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost'
 
+// Cấu hình chung cho fetch requests để xử lý CORS
+const DEFAULT_FETCH_OPTIONS = {
+	mode: 'cors',
+	credentials: 'include',
+	headers: {
+		'Content-Type': 'application/json',
+		'Accept': 'application/json',
+	}
+}
+
 export class UserService {
 	/**
 	 * Đăng nhập user
@@ -10,10 +20,8 @@ export class UserService {
 	 */
 	static async login(loginData) {
 		const response = await fetch(`${API_BASE_URL}/users/login`, {
+			...DEFAULT_FETCH_OPTIONS,
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
 			body: JSON.stringify({
 				username: loginData.username,
 				password: loginData.password,
@@ -38,10 +46,8 @@ export class UserService {
 	 */
 	static async register(registerData) {
 		const response = await fetch(`${API_BASE_URL}/users/register`, {
+			...DEFAULT_FETCH_OPTIONS,
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
 			body: JSON.stringify({
 				username: registerData.username,
 				email: registerData.email,
@@ -66,16 +72,16 @@ export class UserService {
 	static async validateToken(token) {
 		try {
 			const response = await fetch(`${API_BASE_URL}/users/token/validate`, {
+				...DEFAULT_FETCH_OPTIONS,
 				method: 'GET',
 				headers: {
+					...DEFAULT_FETCH_OPTIONS.headers,
 					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json',
 				},
 			})
 
 			return response.ok
-		} catch (error) {
-			console.error('Token validation error:', error)
+		} catch {
 			return false
 		}
 	}
@@ -98,10 +104,8 @@ export class UserService {
 			}
 
 			const response = await fetch(`${API_BASE_URL}/users/exist?${params.toString()}`, {
+				...DEFAULT_FETCH_OPTIONS,
 				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 			})
 
 			if (!response.ok) {
@@ -109,8 +113,7 @@ export class UserService {
 			}
 
 			return await response.json()
-		} catch (error) {
-			console.error('Check availability error:', error)
+		} catch {
 			return { emailExists: false, usernameExists: false }
 		}
 	}
