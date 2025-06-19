@@ -19,14 +19,6 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: database-url
-        - name: REDIRECT_SERVICE_URL
-          valueFrom:
-            secretKeyRef:
-              name: url-service-secret
-              key: REDIRECT_SERVICE_URL
+        envFrom:
+        - secretRef:
+            name: url-service-secret

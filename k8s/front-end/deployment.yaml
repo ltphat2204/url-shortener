@@ -29,12 +29,11 @@ metadata:
   name: front-end-service
   namespace: url-shortener
 spec:
-  type: NodePort
+  type:  LoadBalancer
   selector:
     app: front-end
   ports:
   - name: http
     protocol: TCP
-    port: 80
+    port: 3030
     targetPort: 80
-    nodePort: 30030
