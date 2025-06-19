@@ -1,38 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: users-service-deployment
+  name: user-service-deployment
   namespace: url-shortener
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: users-service
+      app: user-service
   template:
     metadata:
       labels:
-        app: users-service
+        app: user-service
     spec:
       containers:
-      - name: users-service
-        image: users-service:latest
+      - name: user-service
+        image: user-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         envFrom:
         - secretRef:
-            name: users-service-secret
+            name: user-service-secret
         - secretRef:
             name: postgres-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: users-service
+  name: user-service
   namespace: url-shortener
 spec:
   selector:
-    app: users-service
+    app: user-service
   ports:
   - name: http
     port: 80
