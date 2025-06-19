@@ -3,16 +3,18 @@ kind: Ingress
 metadata:
   name: user-service-ingress
   namespace: url-shortener
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: url-shortener-user-stripprefix@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
-  - host: localhost
-    http:
-      paths:
-      - path: /users
-        pathType: Prefix
-        backend:
-          service:
-            name: user-service
-            port:
-              name: http
+    - host: localhost
+      http:
+        paths:
+          - path: /users
+            pathType: Prefix
+            backend:
+              service:
+                name: user-service
+                port:
+                  name: http
