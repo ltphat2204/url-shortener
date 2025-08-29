@@ -1,11 +1,11 @@
 # System Architecture
-1. Overview
+## 1. Overview
 This document describes the architecture of the URL Shortener Microservices System. The system is designed for scalability, independent development, and independent deployment of each service. It leverages modern technologies and follows the microservices pattern to ensure each component can be developed and scaled independently.
 
-2. Architecture Diagram
+## 2. Architecture Diagram
 ![System Architecture Diagram](diagrams/LogicalView.png)
 
-3. Component Descriptions
+## 3. Component Descriptions
 - Frontend: 
 
 Built with Vue.js and AntDesign, the frontend provides a user-friendly interface for creating, viewing, and managing short URLs. It communicates with backend services via the API Gateway.
@@ -23,7 +23,7 @@ Built with TypeScript and NestJS, this service handles the creation, retrieval, 
 
 Written in Go using Gin Gonic, the redirect service resolves short URLs and redirects users to the original destination. It uses Redis for fast lookup and is designed to handle high concurrency.
 
-4. Design Decisions
+## 4. Design Decisions
 - Microservices Architecture:
 
 The system is split into independent services to allow for separate development, deployment, and scaling.
@@ -35,7 +35,7 @@ Go (Gin) for high-performance redirection.
 Vue.js for a modern frontend experience.
 Redis, MongoDB, PostgreSQL for optimized data storage.
 
-5. Scalability & Deployment
+## 5. Scalability & Deployment
 - All services are containerized using Docker and orchestrated with Kubernetes.
 - Each service can be deployed, updated, and scaled independently.
 - The API Gateway manages routing and load balancing.

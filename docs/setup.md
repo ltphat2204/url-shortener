@@ -14,6 +14,7 @@ This document provides instructions for deploying the URL Shortener Microservice
 ```sh
 git clone https://github.com/ltphat2204/url-shortener.git
 cd url-shortener
+```
 
 ### 1.3. Configure Environment Variables
 
@@ -27,7 +28,7 @@ You can use the provided Makefile to build and start all services at once:
 make all
 ```
 
-Or, to build and start a specific service, use:
+- Or, to build and start a specific service, use:
 
 ```sh
 make <service_name>
