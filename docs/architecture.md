@@ -3,7 +3,7 @@
 This document describes the architecture of the URL Shortener Microservices System. The system is designed for scalability, independent development, and independent deployment of each service. It leverages modern technologies and follows the microservices pattern to ensure each component can be developed and scaled independently.
 
 ## 2. Architecture Diagram
-![System Architecture Diagram](diagrams/LogicalView.png)
+![System Architecture Diagram](/diagrams/LogicalView.png)
 
 ## 3. Component Descriptions
 - Frontend: 
