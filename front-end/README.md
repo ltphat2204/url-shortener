@@ -20,10 +20,10 @@ Vue.js frontend for URL shortening service with user management and analytics.
 
 ```bash
 # Install dependencies
-bun install
+npm install
 
 # Copy environment file
-cp .env.example .env
+cp .env.example .env.production
 ```
 
 ### Environment Variables
@@ -43,10 +43,10 @@ VITE_API_GATEWAY_BASE_URL=http://localhost
 
 ```bash
 # Start dev server
-bun dev
+npm run dev
 
 # Build for production
-bun run build
+npm run build
 
 # Run tests
 bun test:unit
@@ -65,10 +65,11 @@ docker-compose up
 
 ```
 src/
-├── components/        # Reusable components
-├── composables/       # Vue composition functions
-├── services/          # API calls
-├── views/            # Pages
-├── router/           # Routing config
-└── utils/            # Helper functions
+├── components/         # Reusable components
+├── composables/        # Vue composition functions
+├── services/           # API calls
+├── views/              # Pages
+├── router/             # Routing config
+└── utils/              # Helper functions
+└── assets/             # Static resources
 ```
