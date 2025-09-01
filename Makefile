@@ -88,14 +88,14 @@ k8s-deploy-traefik-crds:
 
 # Deploy Traefik via Helm
 k8s-deploy-traefik: k8s-namespace
-    helm repo add traefik https://helm.traefik.io/traefik
+	helm repo add traefik https://helm.traefik.io/traefik
 	helm repo update
 	helm install traefik traefik/traefik --namespace url-shortener \
 		--set-string crds.install=false \
 		--set "dashboard.enabled=true" \
 		--set "ingressRoute.dashboard.enabled=true" \
 		--set "ingressRoute.dashboard.insecure=true"
-
+	
 	kubectl wait --namespace url-shortener \
 		--for=condition=available deployment \
 		--selector=app.kubernetes.io/name=traefik \
