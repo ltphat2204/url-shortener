@@ -6,7 +6,7 @@ REDIS_PORT           := 6379
 # This Makefile assumes a .env file is present for Redis config.
 ENV_FILE             := .env
 
-.PHONY: all cache clean api-gateway redirect-service url-service user-service frontend k8s-build-all k8s-build-front-end k8s-build-user-service k8s-build-url-service k8s-build-redirect-service k8s-deploy-all k8s-deploy-front-end k8s-deploy-user-service k8s-deploy-url-service k8s-deploy-redirect-service  k8s-deploy-traefik k8s-deploy-traefik-crds k8s-deploy-traefik-dashboard k8s-apply-middleware k8s-apply-secrets-pvc k8s-apply-redis k8s-deploy-all k8s-deploy-load
+.PHONY: all cache clean api-gateway redirect-service url-service user-service frontend k8s-build-all k8s-build-front-end k8s-build-user-service k8s-build-url-service k8s-build-redirect-service k8s-deploy-all k8s-deploy-front-end k8s-deploy-user-service k8s-deploy-url-service k8s-deploy-redirect-service  k8s-deploy-traefik k8s-deploy-traefik-crds k8s-apply-middleware k8s-apply-redis k8s-deploy-all k8s-deploy-load
 
 api-gateway:
 	@echo "Building api-gateway..."
@@ -90,7 +90,7 @@ k8s-deploy-traefik-crds:
 k8s-deploy-traefik: k8s-namespace
 	helm repo add traefik https://helm.traefik.io/traefik
 	helm repo update
-	helm install traefik traefik/traefik --namespace url-shortener \
+	helm upgrade --install traefik traefik/traefik --namespace url-shortener \
 		--set-string crds.install=false \
 		--set "dashboard.enabled=true" \
 		--set "ingressRoute.dashboard.enabled=true" \
@@ -99,66 +99,61 @@ k8s-deploy-traefik: k8s-namespace
 	kubectl wait --namespace url-shortener \
 		--for=condition=available deployment \
 		--selector=app.kubernetes.io/name=traefik \
-		--timeout=60s
-
-# Deploy Traefik dashboard ingress route
-k8s-deploy-traefik-dashboard:
+		--timeout=120s
+	kubectl apply -f k8s/traefik/middlewares.yaml
 	kubectl apply -f k8s/traefik/dashboard-ingress.yaml
+
 
 k8s-apply-middleware: k8s-deploy-traefik-crds
 	kubectl apply -f k8s/traefik/middlewares.yaml
 
-# Apply secrets và PVC
-k8s-apply-secrets-pvc: k8s-namespace
-	kubectl apply -f k8s/user-service/postgres-secret.yaml
-	kubectl apply -f k8s/user-service/secret.yaml
-	kubectl apply -f k8s/url-service/secret.yaml
-	kubectl apply -f k8s/front-end/secret.yaml
-	kubectl apply -f k8s/user-service/postgres-pvc.yaml
 
 k8s-apply-redis:
 	kubectl apply -f k8s/redis/deployment.yaml
 # Deploy each service
-k8s-deploy-user-service: k8s-namespace k8s-apply-middleware k8s-apply-secrets-pvc
+k8s-deploy-user-service: k8s-namespace k8s-build-user-service
+	kubectl apply -f k8s/user-service/postgres-secret.yaml
+	kubectl apply -f k8s/user-service/secret.yaml
+	kubectl apply -f k8s/user-service/postgres-pvc.yaml
 	kubectl apply -f k8s/user-service/postgres-deployment.yaml
 	kubectl wait --namespace url-shortener --for=condition=available deployment/postgres-deployment --timeout=180s
 	kubectl apply -f k8s/user-service/deployment.yaml
 	kubectl apply -f k8s/user-service/ingress.yaml
 
-k8s-deploy-url-service: k8s-namespace k8s-apply-middleware k8s-apply-secrets-pvc
+k8s-deploy-url-service: k8s-namespace k8s-build-url-service k8s-apply-redis
+	kubectl wait --namespace url-shortener --for=condition=ready pod -l app=redis --timeout=120s
+	kubectl apply -f k8s/url-service/secret.yaml
 	kubectl apply -f k8s/url-service/mongodb-statefulset.yaml
-	kubectl wait --namespace url-shortener --for=condition=ready pod/mongodb-0 --timeout=120s
 	kubectl apply -f k8s/url-service/mongo-init-job.yaml
 	kubectl wait --namespace url-shortener --for=condition=complete job/mongo-init-job --timeout=120s
+	kubectl wait --namespace url-shortener --for=condition=ready pod/mongodb-0 --timeout=120s
 	
 	kubectl apply -f k8s/url-service/deployment.yaml
 	kubectl apply -f k8s/url-service/service.yaml
 	kubectl apply -f k8s/url-service/ingress.yaml
 
-k8s-deploy-front-end: k8s-namespace k8s-apply-middleware k8s-apply-secrets-pvc
+k8s-deploy-front-end: k8s-namespace k8s-build-front-end
+	kubectl apply -f k8s/front-end/secret.yaml
 	kubectl apply -f k8s/front-end/deployment.yaml
 
-k8s-deploy-redirect-service: k8s-namespace k8s-apply-middleware k8s-apply-redis
+k8s-deploy-redirect-service: k8s-namespace k8s-apply-redis k8s-build-redirect-service
 	kubectl wait --namespace url-shortener --for=condition=ready pod -l app=redis --timeout=120s
 	kubectl apply -f k8s/redirect-service/deployment.yaml
 	kubectl apply -f k8s/redirect-service/service.yaml
 	kubectl apply -f k8s/redirect-service/ingress.yaml
 
-k8s-deploy-all: k8s-build-all k8s-namespace k8s-apply-secrets-pvc
+k8s-deploy-all: k8s-namespace
 	$(MAKE) k8s-deploy-traefik
-	$(MAKE) k8s-apply-middleware
-	$(MAKE) k8s-deploy-traefik-dashboard
 	$(MAKE) k8s-deploy-front-end
 	$(MAKE) k8s-deploy-user-service
 	$(MAKE) k8s-deploy-url-service
 	$(MAKE) k8s-deploy-redirect-service
 	minikube tunnel
 
-k8s-deploy-load: k8s-load-images k8s-namespace k8s-apply-secrets-pvc
+k8s-deploy-load: k8s-load-images k8s-namespace
 	$(MAKE) k8s-deploy-traefik
-	$(MAKE) k8s-apply-middleware
-	$(MAKE) k8s-deploy-traefik-dashboard
 	$(MAKE) k8s-deploy-front-end
 	$(MAKE) k8s-deploy-user-service
 	$(MAKE) k8s-deploy-url-service
 	$(MAKE) k8s-deploy-redirect-service
+	minikube tunnel

@@ -58,17 +58,31 @@ spec:
               print('Error: Could not find PRIMARY member after 30 seconds.');
               throw 'PRIMARY not found';
           }
-          
-          const adminDb = db.getSiblingDB('admin');
-          const userExists = adminDb.system.users.findOne({ user: process.env.MONGO_ROOT_USERNAME });
-          if (!userExists) {
-            print("Creating root user...");
-            adminDb.createUser({
-              user: process.env.MONGO_ROOT_USERNAME,
-              pwd: process.env.MONGO_ROOT_PASSWORD,
-              roles: [{ role: "root", db: "admin" }]
-            });
-            print("Root user created successfully.");
-          } else {
-            print("Root user already exists.");
+          sleep(5000);
+          let created = false;
+          for (let i = 0; i < 10; i++) {
+            try {
+              const adminDb = db.getSiblingDB('admin');
+              const userExists = adminDb.system.users.findOne({ user: process.env.MONGO_ROOT_USERNAME });
+              if (!userExists) {
+                print("Creating root user...");
+                adminDb.createUser({
+                  user: process.env.MONGO_ROOT_USERNAME,
+                  pwd: process.env.MONGO_ROOT_PASSWORD,
+                  roles: [{ role: "root", db: "admin" }]
+                });
+                print("Root user created successfully.");
+              } else {
+                print("Root user already exists.");
+              }
+              created = true;
+              break;
+            } catch (e) {
+              print("Create user failed, retrying in 3s...", e);
+              sleep(3000);
+            }
           }
+          if (!created) {
+            throw "Failed to create root user after multiple attempts.";
+          }
+                
