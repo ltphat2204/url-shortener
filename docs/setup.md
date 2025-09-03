@@ -90,6 +90,28 @@ make k8s-deploy-all
 ```sh
 minikube tunnel
 ```
-### 1.6. Access the Application
 
+### 2.5. Build and Start a specific service
+- run 
+```sh
+minikube start --driver=docker
+minikube -p minikube docker-env | Invoke-Expression
+```
+**Note:**  
+These commands will start Minikube and configure your terminal so that all `docker build` commands will build images directly into Minikube’s Docker environment.  
+
+**You must run these commands in every new terminal session before building images or deploying with the Makefile.**  
+
+If you skip this step, Kubernetes will not be able to find your locally built images.
+
+- run
+```sh
+make k8s-deploy-<service_name>
+```
+Replace `<service_name>` with one of: `api-gateway`, `redirect-service`, `url-service`, `user-service`, `frontend`, `cache`.
+**Note:**  
+**You must deploy traefik first if you want to use back-end service (all service except front-end)**
+
+### 2.6. Access the Application
+- Dashboard: [http://localhost/dashboard/](http://localhost/dashboard/)
 - Frontend: [http://localhost:3030](http://localhost:3030)
